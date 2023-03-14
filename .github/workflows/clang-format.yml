@@ -9,13 +9,5 @@ jobs:
     - name: Run clang-format.
       uses: jidicula/clang-format-action@v4.10.2
       with:
-        clang-format-version: '15'
+        clang-format-version: '13'
         fallback-style: 'Mozilla' # optional
-    - name: Commit changes
-      uses: EndBug/add-and-commit@v9
-      with:
-        author_name: ${{ github.actor }}
-        author_email: ${{ github.actor }}@users.noreply.github.com
-        message: "clang-format code formatting"
-        add: "."
-        branch: ${{ github.ref }}
