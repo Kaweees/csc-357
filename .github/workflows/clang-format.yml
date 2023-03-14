@@ -1,54 +1,45 @@
 name: C Quality Check and Formatting
-
 on: [push, pull_request]
-
 jobs:
   formatting-check:
+    name: clang-format
     runs-on: ubuntu-latest
     steps:
-      - name: clang-format
-        uses: actions/checkout@v3
-        strategy:
-          matrix:
-            path:
-              - check: 'labs'
-                exclude: ''
-        steps:
-        - name: Run clang-format style check for C/C++/Protobuf programs.
-          uses: jidicula/clang-format-action@v4.10.2
-          with:
-            clang-format-version: '13'
-            check-path: ${{ matrix.path }}
-            fallback-style: 'Mozilla' # optional
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          author_name: ${{ github.actor }}
-          author_email: ${{ github.actor }}@users.noreply.github.com
-          message: "clang-format code formatting"
-          add: "."
-          branch: ${{ github.ref }}
-      - name: Notify errors
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          # mail server settings
-          server_address: smtp.gmail.com
-          # Server port, default 25: 465 for SSL, 587 for TLS
-          server_port: 465
-          # user credentials
-          # Optional (recommended) mail server username:
-          username: ${{ secrets.MAIL_USERNAME }}
-          # Optional (recommended) mail server password:
-          password: ${{ secrets.MAIL_PASSWORD }}
-          # email subject
-          subject: Github workflow error on ${{ github.repository }}
-          # comma-separated string, send email to
-          to: ${{ secrets.ACTION_MAIL_RECIPIENT }}
-          # from email name
-          from: ${{ secrets.ACTION_MAIL_SENDER }}
-          # Optional: use SSL/TLS
-          # email body as text
-          body: |
-            clang-format failed in the repository https://github.com/${{github.repository}}/actions/runs/${{github.run_id}} failed
-          use_ssl: true
+    - uses: actions/checkout@v3
+    - name: Run clang-format.
+      uses: jidicula/clang-format-action@v4.10.2
+      with:
+        clang-format-version: '15'
+        fallback-style: 'Mozilla' # optional
+    - name: Commit changes
+      uses: EndBug/add-and-commit@v9
+      with:
+        author_name: ${{ github.actor }}
+        author_email: ${{ github.actor }}@users.noreply.github.com
+        message: "clang-format code formatting"
+        add: "."
+        branch: ${{ github.ref }}
+    - name: Notify errors
+      if: failure()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        # mail server settings
+        server_address: smtp.gmail.com
+        # Server port, default 25: 465 for SSL, 587 for TLS
+        server_port: 465
+        # user credentials
+        # Optional (recommended) mail server username:
+        username: ${{ secrets.MAIL_USERNAME }}
+        # Optional (recommended) mail server password:
+        password: ${{ secrets.MAIL_PASSWORD }}
+        # email subject
+        subject: Github workflow error on ${{ github.repository }}
+        # comma-separated string, send email to
+        to: ${{ secrets.ACTION_MAIL_RECIPIENT }}
+        # from email name
+        from: ${{ secrets.ACTION_MAIL_SENDER }}
+        # Optional: use SSL/TLS
+        # email body as text
+        body: |
+          clang-format failed in the repository https://github.com/${{github.repository}}/actions/runs/${{github.run_id}} failed
+        use_ssl: true
