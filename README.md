@@ -4,3 +4,14 @@
 
 
 Code formatting can be manually called by (<kbd>alt</kbd>+<kbd>shift</kbd>+<kbd>f</kbd>)
+
+
+Linux
+```sh
+sudo apt install clang-format
+```
+
+Windows
+```ps1
+winget install -e --id LLVM.LLVM
+```
