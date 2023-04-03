@@ -1,5 +1,8 @@
 {
   "recommendations": [
-    "xaver.clang-format",
+    "ms-vscode.cpptools",
+    "ms-vscode.cpptools-themes",
+    "ms-vscode.cmake-tools",
+    "jeff-hykin.better-cpp-syntax"
   ]
 }
