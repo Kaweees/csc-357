@@ -11,8 +11,8 @@ jobs:
         run: sudo apt install clang-format
       - name: Run clang-format
         run : |
-          clang-format --assume-filename=.clang-format -i -style=file $(find . -name "*.c" -o -name "*.h")
-          clang-format --assume-filename=.clang-format -i -style=file $(find . -name "*.cpp" -o -name "*.hpp")
+          clang-format -style=file -i $(find . -name "*.c" -o -name "*.h")
+          clang-format -style=file -i $(find . -name "*.cpp" -o -name "*.hpp")
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:
