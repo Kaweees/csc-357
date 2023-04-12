@@ -10,7 +10,7 @@ jobs:
       - name: Install clang-format
         run: sudo apt install clang-format
       - name: Run clang-format
-        run: 
+        run : |
           clang-format --assume-filename=.clang-format -i -style=file $(find . -name "*.c" -o -name "*.h")
           clang-format --assume-filename=.clang-format -i -style=file $(find . -name "*.cpp" -o -name "*.hpp")
       - name: Commit changes
