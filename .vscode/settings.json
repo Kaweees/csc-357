@@ -1,4 +1,8 @@
 {
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
+  // C/C++-specific settings
+  "[c,h,cpp,hpp]": {
+    "editor.formatOnSave": true,
+  },
   "clang-format.executable": "${workspaceRoot}clang-format"
 }

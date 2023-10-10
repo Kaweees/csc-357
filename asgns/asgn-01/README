@@ -1,19 +1,5 @@
-Miguel Villa Floran (pnico)
+Miguel Villa Floran (mavillaf)
 
+No Special Instructions
 
-
-
-printf("Enter some text (Ctrl+D or Ctrl+Z to end on Unix/Windows):\n");
-
-EOF is signaled on
-
-        On Unix -
-    like systems(Linux, macOS, etc.),
-    you can signal EOF by pressing Ctrl +
-        D(Control key and 'D' key simultaneously) at the beginning of a
-        new line.
-
-        On Windows,
-    you can signal EOF by pressing Ctrl +
-            Z(Control key and 'Z' key simultaneously) and
-        then Enter.
+I humbly ask that you be lienent with grading my code if it is not up to par with the coding standards, I'm still learning

@@ -10,6 +10,7 @@
 int main(int argc, char *argv[]) {
   int ch;        /* used to store the current char from stdin */
   int count = 0; /* used to store amount of chars in current line */
+  /* EOF signal is Ctrl+D for Unix systems and Ctrl+Z for Windows */
   while ((ch = getchar()) != EOF) {
     switch (ch) {
       case (TAB_CHAR): {
@@ -27,8 +28,8 @@ int main(int argc, char *argv[]) {
         break;
       }
       case (BACKSPACE_CHAR): {
+        putchar(ch);
         if (count) {
-          putchar(ch);
           count--; /* decrement count for each backspace only if count > 0 */
         }
         break;
