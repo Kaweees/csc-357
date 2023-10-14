@@ -1,0 +1,31 @@
+# Problems
+
+1. Declarations are as follows: 
+  a. char* cp;
+  b. char[]* ap;
+  c. int* pp
+2. Yes, it is possible to declare a pointer to a pointer to a pointer. 
+  int x = 3;
+  int *px = &x;
+  int **ppx = &px;
+This might be useful when passing in a pointer to a subroutine in the case that the value the pointer references changes its memory address
+3. Given the following code:
+char s[] = "Hello, world!\n";
+char *p;
+for(p = s; p != ’\0’; p++)
+  putchar(*p);
+
+We note that s[] is a null-terminated string, and p is initalized to the header of the string. Thus, to iterate through the entire stirng, our breaking condition should be checking for the null element of the string. Since we are not deferencing the value at p when checking for the null potion of the string, this loop forever.
+
+4. “arrays are the same as pointers”
+  a. There is truth to this statement. A valid abstraction of a computer's memory can be thinking of it as a one-dimension array. Pointers and strings both refer to indexes in this large array, which are reffered to as addresses, and both can access the value stored at this address.
+  b. Arrays are a continuous chunk of memory that are of a fixed size. This size is determined at the time of declaration However, pointers 
+  
+  A pointer referrs 
+
+5.
+
+6.
+
+7.
+
