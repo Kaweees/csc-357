@@ -23,9 +23,19 @@ We note that s[] is a null-terminated string, and p is initalized to the header 
   
   A pointer referrs 
 
-5.
+5. Exercise 1.3 from Stevens APUE, 3rd ed.
+In Section 1.7, the argument to perror is defined with the ISO C attribute const, whereas the integer argument to strerror isn’t defined with this attribute. Why?
 
-6.
+6. Exercise 1.4 from Stevens APUE, 3rd ed.
+If the calendar time is stored as a signed 32-bit integer, in which year will it overflow? How can we extend the overflow point? Are these strategies compatible with existing applications?
+Since the number is stored as a 
 
-7.
 
+
+7. A subcase of Ex. 2.2 from Stevens: On unix5, what is the actual data type of a size t (the type of malloc(3)’s argument)? In what header file is it defined?
+On Unix-like systems, size_t is an unsigned integer that represents the size of objects in bytes. Typically, size_t is defined in the <stddef.h> header file. <> is typically a shortcut to "/usr/include", but can be changed to a specific value via the -I flag. Running "find stddef.h" yields the folling result son unix5:
+/usr/include/linux/stddef.h
+/usr/lib/gcc/x86_64-redhat-linux/4.8.2/include/stddef.h
+/usr/local/lib/gcc/x86_64-pc-linux-gnu/7.3.0/include/stddef.h
+/usr/share/man/man0p/stddef.h.0p.gz
+However, /usr/include/linux/stddef.h is an empty file. /usr/lib/gcc/x86_64-redhat-linux/4.8.2/include/stddef.h defines size_t to be a long unsigned int.

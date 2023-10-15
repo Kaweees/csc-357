@@ -7,10 +7,12 @@
 #define CARRIAGE_CHAR       13  /* asci code for a carriage return */
 
 char *read_long_line(FILE *file) {
-  char *line = (char *)malloc((INITIAL_BUFFER_SIZE) * sizeof(char));
-
-  int ch;
-  int buffer_size = 0;  // length of file line
+  /* Reads an arbitrarily long line from the given file into newly-allocated
+   * space */
+  int ch; /* character read from file */
+  char *line = (char *)malloc(
+      (INITIAL_BUFFER_SIZE) * sizeof(char)); /* line read from buffer */
+  int buffer_size = 0;                       /* current size of the buffer */
   if (file == NULL) {
     return NULL;
   }
