@@ -30,8 +30,6 @@ In Section 1.7, the argument to perror is defined with the ISO C attribute const
 If the calendar time is stored as a signed 32-bit integer, in which year will it overflow? How can we extend the overflow point? Are these strategies compatible with existing applications?
 Since the number is stored as a 
 
-
-
 7. A subcase of Ex. 2.2 from Stevens: On unix5, what is the actual data type of a size t (the type of malloc(3)’s argument)? In what header file is it defined?
 On Unix-like systems, size_t is an unsigned integer that represents the size of objects in bytes. Typically, size_t is defined in the <stddef.h> header file. <> is typically a shortcut to "/usr/include", but can be changed to a specific value via the -I flag. Running "find stddef.h" yields the folling result son unix5:
 /usr/include/linux/stddef.h
