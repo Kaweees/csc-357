@@ -8,6 +8,14 @@
 #define MAX_CODE_LENGTH 256 /* total number of characters in ASCII */
 #define SPACE_CHAR      32  /* asci code for a space */
 
+void vaildate_malloc(void* ptr) {
+  if (ptr == NULL) {
+    perror("Memory allocation error");
+    exit(1);
+  }
+}
+
+/* Represents a node in a Huffman tree */
 struct HuffmanNode {
   char char_asci;
   int char_freq;
@@ -15,25 +23,52 @@ struct HuffmanNode {
   struct HuffmanNode* right;
 };
 
-void initLinkedList(struct LinkedList* list);
-void append(struct LinkedList* list, int data);
-void printLinkedList(const struct LinkedList* list);
-void freeLinkedList(struct LinkedList* list);
+/**
+ * Returns whether a HuffmanNode should come before another HuffmanNode.
+ Determined by which node appears more frequently than another, with their Asci
+ values used to break ties.
+ * @param a - a pointer to the first HuffmanNode
+ * @param b - a pointer to the second HuffmanNode
+ * @return 1 if a should come before b, 0 otherwise
+ */
+int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b) {
+  if (a->char_freq == b->char_freq) {
+    return a->char_asci < b->char_asci;
+  } else {
+    return a->char_freq < b->char_freq;
+  }
+}
 
-int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b);
-struct HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b);
+/**
+ * Superimposes a Huffman tree onto a Huffman tree. The root of the new tree is
+ * the root of the first tree, and the left and right children of the root are
+ * the roots of the second and third trees, respectively.
+ * @param a - a pointer to the first HuffmanNode
+ * @param b - a pointer to the second HuffmanNode
+ * @return the root of the new tree
+ */
+struct HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b) {
+  struct HuffmanNode* combined =
+      (struct HuffmanNode*)malloc(sizeof(struct HuffmanNode));
+  vaildate_malloc(combined);
+  char min_char_asci =
+      (a->char_asci < b->char_asci) ? a->char_asci : b->char_asci;
+  if (comesBefore(a, b)) {
+    combined->left = a;
+    combined->right = b;
+  } else {
+    combined->left = b;
+    combined->right = a;
+  }
+  combined->char_asci = min_char_asci;
+  combined->char_freq = a->char_freq + b->char_freq;
+  return combined;
+}
 
 char** buildCodes(struct HuffmanNode* root);
 
 char* createHeader(char* codes, char* text) {
   // for (int i = 0; i < strlen()) HuffmanNode* pop(struct LinkedList * list);
-}
-
-void vaildate_malloc(void* ptr) {
-  if (ptr == NULL) {
-    perror("Memory allocation error");
-    exit(1);
-  }
 }
 
 /**
@@ -131,32 +166,29 @@ void mergeSort(int arr[], int left, int right) {
  * @return the root of the Huffman tree
  */
 struct HuffmanNode* buildHuffmanTree(int* frequencies) {
-  struct HuffmanNode** non_zero_nodes = (struct HuffmanNode**)malloc(
+  struct HuffmanNode* root = NULL;
+  struct HuffmanNode* non_zero_nodes = (struct HuffmanNode*)malloc(
       MAX_CODE_LENGTH *
-      sizeof(struct HuffmanNode*)); /* node list containing HuffmanNodes of
-                                                       characters with non-zero
-                                        frequencies */
+      sizeof(struct HuffmanNode)); /* node list containing HuffmanNodes of
+                     characters with non-zero frequencies */
   vaildate_malloc(non_zero_nodes);
   int non_zero_nodes_size = 0;
   for (int i = 0; i < MAX_CODE_LENGTH; i++) {
     if (frequencies[i] > 0) {
-      struct HuffmanNode* node = malloc(sizeof(struct HuffmanNode));
-      vaildate_malloc(node);
-      node->left = NULL;
-      node->right = NULL;
-      node->char_freq = frequencies[i];
-      node->char_asci = i;
+      struct HuffmanNode node;
+      node.left = NULL;
+      node.right = NULL;
+      node.char_freq = frequencies[i];
+      node.char_asci = i;
       non_zero_nodes[non_zero_nodes_size] = node;
       non_zero_nodes_size++;
     }
   }
-  non_zero_nodes = (struct HuffmanNode**)realloc(
+  non_zero_nodes = (struct HuffmanNode*)realloc(
       non_zero_nodes, non_zero_nodes_size * sizeof(struct HuffmanNode));
   vaildate_malloc(non_zero_nodes);
   if (non_zero_nodes_size == 0) {
-    return NULL;
-  } else if (non_zero_nodes_size == 1) {
-    return non_zero_nodes[0];
+    return root;
   } else {
     while (non_zero_nodes_size > 1) {
       mergeSort(non_zero_nodes, 0, non_zero_nodes_size - 1);
@@ -169,28 +201,21 @@ struct HuffmanNode* buildHuffmanTree(int* frequencies) {
       }
       non_zero_nodes_size--;
     }
-  }
-
-  struct LinkedList* list = malloc(sizeof(struct LinkedList));
-  vaildate_malloc(list);
-
-  initLinkedList(list);
-
-  for (int i = 0; i < non_zero_nodes_size; i++) {
-    append(list, non_zero_nodes[i]);
-  }
-
-  while (list->size > 1) {
-    struct HuffmanNode* a = pop(list);
-    struct HuffmanNode* b = pop(list);
-    struct HuffmanNode* combined = combine(a, b);
-    append(list, combined);
+    root = (struct HuffmanNode*)realloc(non_zero_nodes, non_zero_nodes_size);
+    return root;
   }
 }
 
 size_t huffmanEncode(FILE* infile, FILE* outfile) {
   int* char_freq = countFrequencies(infile);
   struct HuffmanNode* root = buildHuffmanTree(char_freq);
+  char** codes = buildCodes(root);
+  char* header = createHeader(codes, text);
+  char* encodedtext = readText(infile);
+  writeHeader(outfile, header);
+  writeEncodedText(outfile, text, codes);
   free(char_freq);
   free(root);
+  free(codes);
+  free(header);
 }

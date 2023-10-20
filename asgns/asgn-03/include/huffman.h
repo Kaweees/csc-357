@@ -19,7 +19,7 @@ void append(struct LinkedList* list, int data);
 void printLinkedList(const struct LinkedList* list);
 void freeLinkedList(struct LinkedList* list);
 
-bool comesBefore(struct HuffmanNode* a, struct HuffmanNode* b);
+int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b);
 HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b);
 int* countFrequencies(FILE* fp);
 HuffmanNode* buildHuffmanTree(int* frequencies);
