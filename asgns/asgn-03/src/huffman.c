@@ -35,8 +35,9 @@ void vaildate_malloc(void* ptr) {
     exit(1);
   }
 }
+
 /**
- * Takes a string of the form "x y z" and returns an array of frequencies
+ * Takes a string of the form "x y z" and returns an array of frequencies in
  * ascending asci order
  *
  * @param file - a pointer to the file to read the line from
@@ -50,20 +51,13 @@ int* parseHeader(char* header, char* text) {
   int i = 0;
   while (i < header_length) {
     while ((ch = header[i]) != SPACE_CHAR) {
-      i++
+      i = (i * 10) + (ch - '0');
+      i++;
     }
-  }
-
-  // for (int i = 0; i < ; i++) {
-  //   while
-
-  while ((ch = fgetc(file)) != SPACE_CHAR) {
+    freq_list[i]++;
+    i = 0;
   }
 }
-
-//   // for (int i = 0; i < strlen()) HuffmanNode* pop(struct LinkedList *
-//   // list);
-// }
 
 /**
  * Opens a file and counts the frequency of each character in the file
@@ -81,6 +75,55 @@ int* countFrequencies(FILE* fp) {
   }
 }
 
+void merge(int arr[], int left, int mid, int right) {
+  int n1 = mid - left + 1;
+  int n2 = right - mid;
+
+  int L[n1], R[n2];
+
+  for (int i = 0; i < n1; i++) {
+    L[i] = arr[left + i];
+  }
+  for (int i = 0; i < n2; i++) {
+    R[i] = arr[mid + 1 + i];
+  }
+
+  int i = 0, j = 0, k = left;
+  while (i < n1 && j < n2) {
+    if (L[i] >= R[j]) {
+      arr[k] = L[i];
+      i++;
+    } else {
+      arr[k] = R[j];
+      j++;
+    }
+    k++;
+  }
+
+  while (i < n1) {
+    arr[k] = L[i];
+    i++;
+    k++;
+  }
+
+  while (j < n2) {
+    arr[k] = R[j];
+    j++;
+    k++;
+  }
+}
+
+void mergeSort(int arr[], int left, int right) {
+  if (left < right) {
+    int mid = left + (right - left) / 2;
+
+    mergeSort(arr, left, mid);
+    mergeSort(arr, mid + 1, right);
+
+    merge(arr, left, mid, right);
+  }
+}
+
 /**
  * Creates a Huffman tree from an array of character frequencies
  *
@@ -88,12 +131,13 @@ int* countFrequencies(FILE* fp) {
  * @return the root of the Huffman tree
  */
 struct HuffmanNode* buildHuffmanTree(int* frequencies) {
-  struct HuffmanNode** non_zero_nodes =
-      malloc(sizeof(struct HuffmanNode*) *
-             MAX_CODE_LENGTH); /* node list containing HuffmanNodes of
-                                  characters with non-zero frequencies */
+  struct HuffmanNode** non_zero_nodes = (struct HuffmanNode**)malloc(
+      MAX_CODE_LENGTH *
+      sizeof(struct HuffmanNode*)); /* node list containing HuffmanNodes of
+                                                       characters with non-zero
+                                        frequencies */
   vaildate_malloc(non_zero_nodes);
-  size_t non_zero_nodes_size = 0;
+  int non_zero_nodes_size = 0;
   for (int i = 0; i < MAX_CODE_LENGTH; i++) {
     if (frequencies[i] > 0) {
       struct HuffmanNode* node = malloc(sizeof(struct HuffmanNode));
@@ -106,9 +150,26 @@ struct HuffmanNode* buildHuffmanTree(int* frequencies) {
       non_zero_nodes_size++;
     }
   }
-  non_zero_nodes_size = realloc(
-      non_zero_nodes, sizeof(struct HuffmanNode*) * non_zero_nodes_size);
+  non_zero_nodes = (struct HuffmanNode**)realloc(
+      non_zero_nodes, non_zero_nodes_size * sizeof(struct HuffmanNode));
   vaildate_malloc(non_zero_nodes);
+  if (non_zero_nodes_size == 0) {
+    return NULL;
+  } else if (non_zero_nodes_size == 1) {
+    return non_zero_nodes[0];
+  } else {
+    while (non_zero_nodes_size > 1) {
+      mergeSort(non_zero_nodes, 0, non_zero_nodes_size - 1);
+      struct HuffmanNode* a = non_zero_nodes[0];
+      struct HuffmanNode* b = non_zero_nodes[1];
+      struct HuffmanNode* combined = combine(a, b);
+      non_zero_nodes[0] = combined;
+      for (int i = 1; i < non_zero_nodes_size - 1; i++) {
+        non_zero_nodes[i] = non_zero_nodes[i + 1];
+      }
+      non_zero_nodes_size--;
+    }
+  }
 
   struct LinkedList* list = malloc(sizeof(struct LinkedList));
   vaildate_malloc(list);
@@ -129,6 +190,7 @@ struct HuffmanNode* buildHuffmanTree(int* frequencies) {
 
 size_t huffmanEncode(FILE* infile, FILE* outfile) {
   int* char_freq = countFrequencies(infile);
-  free(char_freq);
   struct HuffmanNode* root = buildHuffmanTree(char_freq);
+  free(char_freq);
+  free(root);
 }
