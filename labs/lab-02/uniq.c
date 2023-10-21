@@ -41,8 +41,7 @@ char *read_long_line(FILE *file) {
       }
     }
     /* Add the character to the line */
-    line[line_length] = ch;
-    line_length++;
+    line[line_length++] = ch; /* increment line_length after adding character */
   }
   /* Add a null terminator to the end of the line */
   line[line_length] = '\0';
