@@ -18,6 +18,5 @@ jobs:
         with:
           author_name: ${{ github.actor }}
           author_email: ${{ github.actor }}@users.noreply.github.com
-          message: 'Code formatting and linting'
-          add: '.'
-          branch: ${{ github.ref }}
+          message: "Code formatting and linting"
+          add: "." # Add all files
