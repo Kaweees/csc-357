@@ -2,11 +2,22 @@
 
 # Begin Variables Section
 
+## Program Section: change these variables based on your program
+# The name of the program to build.
+TARGET := uniq
+
 ## Compiler Section: change these variables based on your compiler
 # -----------------------------------------------------------------------------
-# The `gcc` executable.
+# The compiler executable.
 CC := gcc
-CFLAGS := -g -o uniq -Wall
+# The compiler flags.
+CFLAGS := -g -o $(TARGET) -Wall
+# The linker executable.
+LD = gcc
+# The linker flags.
+LDFLAGS = -o $(TARGET) -Wall
+# The name of the test input file
+TEST_INPUT = test_input.txt
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -16,20 +27,19 @@ TOP_DIR := $(shell pwd)
 SRC_DIR := $(TOP_DIR)/src
 # directory to locate header files
 INC_DIR := $(TOP_DIR)/include
-
-# name of target executable
-TARGET := uniq
+# directory to locate object files
+OBJ_DIR := $(TOP_DIR)/obj
 # directory to place build artifacts
 BUILD_DIR := $(TOP_DIR)/target/release/
 
+# header files to preprocess
+INCS := -I$(INC_DIR)
 # source files to compile
 SRCS := $(wildcard $(SRC_DIR)/*.c)
-# header files to include
-HDRS := $(wildcard $(INC_DIR)/*.h)
-# object files to build
-OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
-TARGET_OBJ := $(BUILD_DIR)/uniq.o
-
+# object files to link
+OBJS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+# executable file to build
+BINS := $(BUILD_DIR)$(TARGET)
 
 ## Command Section: change these variables based on your commands
 # -----------------------------------------------------------------------------
@@ -38,47 +48,27 @@ TARGET_OBJ := $(BUILD_DIR)/uniq.o
 
 all: clean $(TARGET) test
 
-# $< and $@ are automatic variables that refer to the source (dependency) and target (build) files, respectively
-# Use the GCC compiler to compile source files into an object files
-$(TARGET): $(TARGET_OBJ)
+# Rule to build the program from linked object files
+$(TARGET): $(OBJS)
+	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
+	$(LD) $(LDFLAGS) $(OBJS) -o $(BINS)
 
-$(TARGET_OBJ): $(SOURCE)
-	mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c -o $(TARGET_OBJ) $(SOURCE) $(HEADER)
+# Rule to compile source files into object files 
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR) # Create the object directory if it doesn't exist
+	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
-# Test the program by running the executable
+# Test target: build and test the program against sample input
 test:
-	./$(TARGET)
+	$(BINS) < $(TEST_INPUT)
+	@echo "Comparing output to /bin/uniq:"
+	diff <(./$(BINS) < $(TEST_INPUT)) <(uniq < $(TEST_INPUT))
 
-
-# object files to build
-OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
-
-## Dependency Section: change these variables based on your dependencies
-# -----------------------------------------------------------------------------
-# This is the default target for `make`.
-# The `make` command will invoke the first target entry in the file.
-# In this case, the first target is `all`, which is used to compile the program.
-# If you want to compile the program, type `make` or `make all` in the terminal.
-all: $(TARGET)
-
-# This is the target for `make test`.
-# The `make test` command will invoke the `test` target entry in the file.
-# In this case, the `test` target is used to run the program.
-# If you want to run the program, type `make test` in the terminal.
-test: $(TARGET)
-	./$(TARGET)
-
-# This is the target for `make clean`.
-# The `make clean` command will invoke the `clean` target entry in the file.
-# In this case, the `clean` target is used to remove build artifacts.
-# If you want to remove build artifacts, type `make clean` in the terminal.
+# Remove all 
 clean:
-	rm -rf $(TARGET) $(OBJS)
+	rm -rf $(OBJ_DIR) $(BUILD_DIR) $(TARGET)
 
-# This is the target for `make flash`.
-# The `make flash` command will invoke the `flash` target entry in the file.
-# In this case, the `flash` target is used to flash the program to an Arduino.
-# If you want to flash the program to an Arduino, type `make flash` in the terminal.
-flash: $(TARGET)
-	./$(TARGET)
+# Clean target: remove build artifacts and non-essential files
+clean:
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+

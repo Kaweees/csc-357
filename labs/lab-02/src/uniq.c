@@ -4,9 +4,16 @@
 #include <string.h>
 #include <unistd.h>
 
-#define INITIAL_BUFFER_SIZE 128 /* Initial size of the buffer in bytes */
-#define NEWLINE_CHAR        10  /* asci code for a newline */
-#define CARRIAGE_CHAR       13  /* asci code for a carriage return */
+#define INITIAL_BUFFER_SIZE 128  /* Initial size of the buffer in bytes */
+#define NEWLINE_CHAR        10   /* asci code for a newline */
+#define CARRIAGE_CHAR       13   /* asci code for a carriage return */
+#define STRING_TERMINATOR   '\0' /* null terminator for a string */
+
+/* Represents an arbitrarily long line */
+struct LongLine {
+  size_t line_length;
+  char *line;
+};
 
 /**
  * Reads an arbitrarily long line from the given file into newly-allocated
@@ -29,6 +36,7 @@ char *read_long_line(FILE *file) {
   }
   /* Read characters from the file until end of line or newline read */
   while (
+      // fgets(line, buffer_size, file) != NULL &&
       (ch = fgetc(file)) != EOF && ch != NEWLINE_CHAR && ch != CARRIAGE_CHAR) {
     /* Reallocate space if buffer is full */
     if (line_length >
@@ -62,6 +70,7 @@ void uniq(FILE *fp) {
     free(old_line);
     old_line = new_line;
   }
+  free(old_line);
 }
 
 int main(int argc, char *argv[]) {
