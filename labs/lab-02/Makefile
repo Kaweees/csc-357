@@ -16,6 +16,8 @@ CFLAGS := -g -o $(TARGET) -Wall
 LD = gcc
 # The linker flags.
 LDFLAGS = -o $(TARGET) -Wall
+# The shell executable.
+SHELL := /bin/bash
 # The name of the test input file
 TEST_INPUT = test_input.txt
 
@@ -46,10 +48,14 @@ BINS := $(BUILD_DIR)$(TARGET)
 # Targets
 .PHONY: all $(TARGET) test clean
 
-all: clean $(TARGET) test
+# Default target: build the program
+all: $(BINS)
+
+# Build the program
+$(TARGET): $(BINS)
 
 # Rule to build the program from linked object files
-$(TARGET): $(OBJS)
+$(BINS): $(OBJS)
 	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
 	$(LD) $(LDFLAGS) $(OBJS) -o $(BINS)
 
@@ -59,14 +65,14 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 # Test target: build and test the program against sample input
-test:
-	$(BINS) < $(TEST_INPUT)
-	@echo "Comparing output to /bin/uniq:"
-	diff <(./$(BINS) < $(TEST_INPUT)) <(uniq < $(TEST_INPUT))
+# test:
+# 	$(BINS) < $(TEST_INPUT)
+# 	@echo "Comparing output to /bin/uniq:"
 
-# Remove all 
-clean:
-	rm -rf $(OBJ_DIR) $(BUILD_DIR) $(TARGET)
+test: $(BINS)
+	@echo "Testing $(TARGET)..."
+	@echo "Comparing output to /bin/uniq:"
+	diff <($(BINS) < $(TEST_INPUT)) <(uniq < $(TEST_INPUT))
 
 # Clean target: remove build artifacts and non-essential files
 clean:
