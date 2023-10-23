@@ -65,10 +65,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 # Test target: build and test the program against sample input
-# test:
-# 	$(BINS) < $(TEST_INPUT)
-# 	@echo "Comparing output to /bin/uniq:"
-
 test: $(BINS)
 	@echo "Testing $(TARGET)..."
 	@echo "Comparing output to /bin/uniq:"
