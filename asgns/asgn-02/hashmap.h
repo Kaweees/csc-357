@@ -11,8 +11,8 @@ typedef struct KeyValue {
 
 // Define the structure for the hash table
 typedef struct HashTable {
-  int table_size; /* total size of the hash table */
-  int num_items; /* number of items in the hash table */
+  int table_size;         /* total size of the hash table */
+  int num_items;          /* number of items in the hash table */
   KeyValue** table_items; /* array of pointers to KeyValue */
 } HashTable;
 
