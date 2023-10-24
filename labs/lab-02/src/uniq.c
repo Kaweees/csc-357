@@ -14,7 +14,7 @@
 /* Represents an arbitrarily long line */
 struct LongLine {
   /* The length of the line in bytes */
-  size_t line_length;
+  size_t capacity;
   /* The pointer to the line */
   char *line;
 };
@@ -24,75 +24,63 @@ struct LongLine {
  * space
  *
  * @param file - a pointer to the file to read the line from
- * @return a pointer to the line read from the file
+ * @return a pointer to a LongLine struct containing the line and its length
  */
 struct LongLine *read_long_line(FILE *file) {
   /* line read from buffer */
   struct LongLine *long_line =
       (struct LongLine *)safe_malloc(sizeof(struct LongLine));
-  long_line->line_length = INITIAL_BUFFER_SIZE;
+  long_line->capacity = INITIAL_BUFFER_SIZE;
   /* Allocate valid space for the line read from buffer */
-  long_line->line = (char *)safe_calloc(long_line->line_length, sizeof(char));
-  int ch; /* character read from file */
+  long_line->line = (char *)safe_calloc(long_line->capacity, sizeof(char));
   size_t buffer_size = 0;
+  int ch; /* character read from file */
 
   /* Read characters from the file until end of line or newline read */
-  while ((ch = fgetc(file)) != EOF) {
-    /* Reallocate space if buffer is full */
-    if (buffer_size >= long_line->line_length -
-                           1) { /* minus two because of the null character*/
-      long_line->line_length *= 2;
+  while (
+      (ch = fgetc(file)) != EOF && ch != NEWLINE_CHAR && ch != CARRIAGE_CHAR) {
+    /* Reallocate space if buffer is full, minus two because of the null
+     * character */
+    if (buffer_size >= long_line->capacity - 1) {
+      long_line->capacity *= 2;  // Double the capacity
       long_line->line =
-          (char *)safe_realloc(long_line->line, long_line->line_length);
+          (char *)safe_realloc(long_line->line, long_line->capacity);
     }
-
-    /* Add the character to the line */
-    long_line->line[buffer_size++] =
-        ch; /* increment line_length after adding character */
-    if (ch != NEWLINE_CHAR && ch != CARRIAGE_CHAR) {
-      /* Add a null terminator to the end of the line */
-      long_line->line[buffer_size] = STRING_TERMINATOR;
-      break;
-    }
+    /* Add the character to the line and increment line_length after */
+    long_line->line[buffer_size++] = (char)ch;
   }
-  if (buffer_size) {
-    long_line->line = (char *)safe_realloc(long_line->line, buffer_size);
-    long_line->line_length = buffer_size;
-    return long_line;
-  } else {
+
+  if ((ch == EOF || ch == NEWLINE_CHAR || ch == CARRIAGE_CHAR) &&
+      long_line->capacity == 0) {
     free(long_line->line);
     free(long_line);
     return NULL;
+  } else {
+    long_line->line[buffer_size] = NEWLINE_CHAR;
+    return long_line;
   }
 }
 
 void uniq(FILE *fp) {
-  struct LongLine *old_line = NULL;
-  struct LongLine *new_line;
-  while ((new_line = read_long_line(fp)) != NULL) {
-    if (old_line == NULL || strcmp(old_line->line, new_line->line) != 0) {
+  struct LongLine *prev_line = NULL;
+  struct LongLine *current_line = NULL;
+
+  while ((current_line = read_long_line(fp)) != NULL) {
+    if (prev_line == NULL || strcmp(prev_line->line, current_line->line) != 0) {
       /* Print the line if unique */
-
-      printf("%s", new_line->line);
-      /* Free the old line */
-      if (old_line != NULL) {
-        free(old_line->line);
-        free(old_line);
-      }
-
-      /* Set the old line to the new line */
-      old_line = new_line;
-    } else {
-      /* Free the new line */
-      free(new_line->line);
-      free(new_line);
+      printf("%s", current_line->line);
     }
+    /* Free the previous line */
+    if (prev_line != NULL) {
+      free(prev_line->line);
+      free(prev_line);
+    }
+    prev_line = current_line;
   }
-
-  /* Free the old line */
-  if (old_line != NULL) {
-    free(old_line->line);
-    free(old_line);
+  /* Free the last line */
+  if (current_line != NULL) {
+    free(current_line->line);
+    free(current_line);
   }
 }
 
