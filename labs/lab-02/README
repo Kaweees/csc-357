@@ -1,34 +1,42 @@
-# Problems
+Miguel Villa Floran (mavillaf)
 
-1. Declarations are as follows: 
-  a. char* cp;
-  b. char[]* ap;
-  c. int* pp
-2. Yes, it is possible to declare a pointer to a pointer to a pointer. 
-  int x = 3;
-  int *px = &x;
-  int **ppx = &px;
-This might be useful when passing in a pointer to a subroutine in the case that the value the pointer references changes its memory address
-3. Given the following code:
+Run the make commands specified in the assignment. Take a look at it too, I'm quite proud of how well engineered and scalable it is for future assignents and my own personal projects.
+
+I humbly ask that you be lienent with grading my code if it is not up to par with the coding standards, I'm still learning
+
+#Problems
+
+1. Declarations are as follows : a.char *cp;
+b.char[] * ap;
+c.int *pp 2. Yes,
+    it is possible to declare a pointer to a pointer to a pointer.int x = 3;
+int *px = &x;
+int **ppx = &px;
+This might be useful when passing in a pointer to a subroutine in
+    the case that the value the pointer references changes its memory
+        address 3. Given the following code:
 char s[] = "Hello, world!\n";
 char *p;
-for(p = s; p != ’\0’; p++)
-  putchar(*p);
+for (p = s; p != ’\0’; p++) putchar(*p);
 
 We note that s[] is a null-terminated string, and p is initalized to the header of the string. Thus, to iterate through the entire stirng, our breaking condition should be checking for the null element of the string. Since we are not deferencing the value at p when checking for the null potion of the string, this loop forever.
 
 4. “arrays are the same as pointers”
-  a. There is truth to this statement. A valid abstraction of a computer's memory can be thinking of it as a one-dimension array. Pointers and strings both refer to indexes in this large array, which are reffered to as addresses, and both can access the value stored at this address.
-  b. Arrays are a continuous chunk of memory that are of a fixed size. This size is determined at the time of declaration However, pointers 
-  
-  A pointer referrs 
+  a. There is truth to this statement. A valid abstraction of a computer's memory can be thinking of it as a one-dimension array. Pointers and strings both refer to indexes in this large array, which are referred to as addresses, and both can access the value stored at this address.
+  b. Arrays are a continuous chunk of memory that are of a fixed size and of a single type, with the size of this chunk is determined at the time of compliation, and this size cannot be changed. However, pointers can refer to variables or dynamically allocated memory, which can store data that does not have to be of a single type and have sizes that can change throughout the program's execution.
 
 5. Exercise 1.3 from Stevens APUE, 3rd ed.
 In Section 1.7, the argument to perror is defined with the ISO C attribute const, whereas the integer argument to strerror isn’t defined with this attribute. Why?
+The perror function is defined as follows:
+void perror(const char *s);
+and the strerror function is defined as follows:
+char* strerror(int errnum)
+The const attribute will make the associated variable immutable. Since C follows the pass by value paradigm, the value of arguements do not change when they are passed into functions. Thus, the parameter errnum within strerror does not not have the const attribute because modifications within strerror are inconsequential in the grand scheme of the program.
+However, the parameter of perror char *s is declared as a constant because the modification of the value the pointer dereferences to has consequences outside of the function, and thus s is declared as a const to ensure the value it points to remains immutable throughout the runtime of the function. 
 
 6. Exercise 1.4 from Stevens APUE, 3rd ed.
 If the calendar time is stored as a signed 32-bit integer, in which year will it overflow? How can we extend the overflow point? Are these strategies compatible with existing applications?
-Since the number is stored as a 
+It will overflow on Janurary 19th, 2038. The overflow point can be extended by increasing the amount of bits used to store the number, which can be done by changing the kernel software to use bit shifts to extend the size of the calendar time or by using a processor that has a larger address space and/or supports numbers larger than 32 buts. However, since the former solution is a solution that is not backwards-compatible with the kernel already on the device and the later requires a new processor, there is a very compelling arguement that neither of these solutions are strategies are compatible with devices that suffer from this issue. 
 
 7. A subcase of Ex. 2.2 from Stevens: On unix5, what is the actual data type of a size t (the type of malloc(3)’s argument)? In what header file is it defined?
 On Unix-like systems, size_t is an unsigned integer that represents the size of objects in bytes. Typically, size_t is defined in the <stddef.h> header file. <> is typically a shortcut to "/usr/include", but can be changed to a specific value via the -I flag. Running "find stddef.h" yields the folling result son unix5:

@@ -50,8 +50,7 @@ struct LongLine *read_long_line(FILE *file) {
     long_line->line[buffer_size++] = (char)ch;
   }
 
-  if ((ch == EOF || ch == NEWLINE_CHAR || ch == CARRIAGE_CHAR) &&
-      long_line->capacity == 0) {
+  if (ch == EOF || long_line->capacity == 0) {
     free(long_line->line);
     free(long_line);
     return NULL;
