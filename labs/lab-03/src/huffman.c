@@ -8,8 +8,9 @@
 
 #include "safe_mem.h"
 
-#define MAX_CODE_LENGTH 256 /* total number of characters in ASCII */
-#define SPACE_CHAR      32  /* asci code for a space */
+#define MAX_CODE_LENGTH   256  /* total number of characters in ASCII */
+#define SPACE_CHAR        32   /* asci code for a space */
+#define STRING_TERMINATOR '\0' /* null terminator for a string */
 
 /**
  * Reads a file and returns its contents as a singular string
@@ -113,6 +114,7 @@ int* parseHeader(char* header, char* text) {
     freq_list[i]++;
     i = 0;
   }
+  return freq_list;
 }
 
 /**
@@ -121,12 +123,14 @@ int* parseHeader(char* header, char* text) {
  * @param file - a pointer to the file to count the frequencies of
  * @return an array of character frequencies in ascending asci order
  */
-int* countFrequencies(FILE* fp) {
+int* countFrequencies(struct FileContent* text) {
   int* freq_list = (int*)safe_calloc(MAX_CODE_LENGTH, sizeof(int));
-  int ch; /* character read from file */
-  while ((ch = fgetc(fp)) != EOF) {
-    freq_list[ch]++;
+  int i = 0;
+  for (i = 0; i < text->file_size; i++) {
+    /* increment the frequency of the corresponding character */ 
+    freq_list[(int) text->file_contents[i]]++;
   }
+  return freq_list;
 }
 
 void merge(struct HuffmanNode arr[], int l, int m, int r) {

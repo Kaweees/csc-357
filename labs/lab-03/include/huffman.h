@@ -35,7 +35,7 @@ void freeLinkedList(struct LinkedList* list);
 struct FileContent* readText(FILE* file);
 int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b);
 struct HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b);
-int* countFrequencies(FILE* fp);
+int* countFrequencies(struct FileContent*);
 struct HuffmanNode* buildHuffmanTree(int* frequencies);
 char** buildCodes(struct HuffmanNode* root);
 char* createHeader(char* codes, char* text);
