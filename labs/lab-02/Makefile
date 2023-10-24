@@ -11,11 +11,11 @@ TARGET := uniq
 # The compiler executable.
 CC := gcc
 # The compiler flags.
-CFLAGS := -g -o $(TARGET) -Wall
+CFLAGS := -g -Wall
 # The linker executable.
 LD = gcc
 # The linker flags.
-LDFLAGS = -o $(TARGET) -Wall
+LDFLAGS = -Wall
 # The shell executable.
 SHELL := /bin/bash
 # The name of the test input file
