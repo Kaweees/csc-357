@@ -4,6 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "safe_mem.h"
+
 #define INITIAL_BUFFER_SIZE 128  /* Initial size of the buffer in bytes */
 #define NEWLINE_CHAR        10   /* asci code for a newline */
 #define CARRIAGE_CHAR       13   /* asci code for a carriage return */
@@ -11,7 +13,9 @@
 
 /* Represents an arbitrarily long line */
 struct LongLine {
+  /* The length of the line in bytes */
   size_t line_length;
+  /* The pointer to the line */
   char *line;
 };
 
@@ -22,55 +26,74 @@ struct LongLine {
  * @param file - a pointer to the file to read the line from
  * @return a pointer to the line read from the file
  */
-char *read_long_line(FILE *file) {
-  char *line = NULL; /* line read from buffer */
-  size_t buffer_size = INITIAL_BUFFER_SIZE;
-  size_t line_length = 0;
+struct LongLine *read_long_line(FILE *file) {
+  /* line read from buffer */
+  struct LongLine *long_line =
+      (struct LongLine *)safe_malloc(sizeof(struct LongLine));
+  long_line->line_length = INITIAL_BUFFER_SIZE;
+  /* Allocate valid space for the line read from buffer */
+  long_line->line = (char *)safe_calloc(long_line->line_length, sizeof(char));
   int ch; /* character read from file */
+  size_t buffer_size = 0;
 
-  /* Allocate valid space for the line */
-  line = (char *)calloc(buffer_size, sizeof(char));
-  if (line == NULL) {
-    perror("Memory allocation error");
-    exit(1);
-  }
   /* Read characters from the file until end of line or newline read */
-  while (
-      // fgets(line, buffer_size, file) != NULL &&
-      (ch = fgetc(file)) != EOF && ch != NEWLINE_CHAR && ch != CARRIAGE_CHAR) {
+  while ((ch = fgetc(file)) != EOF) {
     /* Reallocate space if buffer is full */
-    if (line_length >
-        buffer_size) { /* minus two because of the null character*/
-      buffer_size *= 2;
-      line = (char *)realloc(line, buffer_size);
-      if (line == NULL) {
-        perror("Memory allocation error");
-        exit(1);
-      }
+    if (buffer_size >= long_line->line_length -
+                           1) { /* minus two because of the null character*/
+      long_line->line_length *= 2;
+      long_line->line =
+          (char *)safe_realloc(long_line->line, long_line->line_length);
     }
+
     /* Add the character to the line */
-    line[line_length++] = ch; /* increment line_length after adding character */
+    long_line->line[buffer_size++] =
+        ch; /* increment line_length after adding character */
+    if (ch != NEWLINE_CHAR && ch != CARRIAGE_CHAR) {
+      /* Add a null terminator to the end of the line */
+      long_line->line[buffer_size] = STRING_TERMINATOR;
+      break;
+    }
   }
-  /* Add a null terminator to the end of the line */
-  line[line_length] = '\0';
-  return line;
+  if (buffer_size) {
+    long_line->line = (char *)safe_realloc(long_line->line, buffer_size);
+    long_line->line_length = buffer_size;
+    return long_line;
+  } else {
+    free(long_line->line);
+    free(long_line);
+    return NULL;
+  }
 }
 
 void uniq(FILE *fp) {
-  char *old_line, *new_line;
-  old_line = read_long_line(fp);
-  if (strlen(old_line) > 0) {
-    printf("%s\n", old_line);
-  }
-  while (strlen(old_line)) {
-    new_line = read_long_line(fp);
-    if (strcmp(old_line, new_line) != 0 && strlen(new_line)) {
-      printf("%s\n", new_line);
+  struct LongLine *old_line = NULL;
+  struct LongLine *new_line;
+  while ((new_line = read_long_line(fp)) != NULL) {
+    if (old_line == NULL || strcmp(old_line->line, new_line->line) != 0) {
+      /* Print the line if unique */
+
+      printf("%s", new_line->line);
+      /* Free the old line */
+      if (old_line != NULL) {
+        free(old_line->line);
+        free(old_line);
+      }
+
+      /* Set the old line to the new line */
+      old_line = new_line;
+    } else {
+      /* Free the new line */
+      free(new_line->line);
+      free(new_line);
     }
-    free(old_line);
-    old_line = new_line;
   }
-  free(old_line);
+
+  /* Free the old line */
+  if (old_line != NULL) {
+    free(old_line->line);
+    free(old_line);
+  }
 }
 
 int main(int argc, char *argv[]) {
