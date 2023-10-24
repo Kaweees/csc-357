@@ -127,8 +127,8 @@ int* countFrequencies(struct FileContent* text) {
   int* freq_list = (int*)safe_calloc(MAX_CODE_LENGTH, sizeof(int));
   int i = 0;
   for (i = 0; i < text->file_size; i++) {
-    /* increment the frequency of the corresponding character */ 
-    freq_list[(int) text->file_contents[i]]++;
+    /* increment the frequency of the corresponding character */
+    freq_list[(int)text->file_contents[i]]++;
   }
   return freq_list;
 }

@@ -24,18 +24,16 @@ void htable(FILE* file) {
   int* char_freq = countFrequencies(file_text);
   printf("%d\n", char_freq[(int)'d']);
   /*
-  
+
   struct HuffmanNode* root = buildHuffmanTree(char_freq);
   char** codes = buildCodes(root);
-  
+
   safe_free(root);
   safe_free(codes);
   */
   safe_free(file_text->file_contents);
   safe_free(file_text);
   safe_free(char_freq);
-
-  
 }
 
 int main(int argc, char* argv[]) {
