@@ -23,22 +23,23 @@ struct HuffmanNode {
   struct HuffmanNode* right;
 };
 
-struct LinkedList {
-  struct HuffmanNode* head;
+/* Represents a Huffman code for a character */
+struct HuffmanCode {
+  /* The Huffman code */
+  char* code_contents;
+  /* The length of the Huffman code */
+  size_t code_length;
+  /* The capacity the Huffman code can hold */
+  size_t code_capacity;
 };
-
-void initLinkedList(struct LinkedList* list);
-void append(struct LinkedList* list, int data);
-void printLinkedList(const struct LinkedList* list);
-void freeLinkedList(struct LinkedList* list);
 
 struct FileContent* readText(FILE* file);
 int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b);
 struct HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b);
 int* countFrequencies(struct FileContent*);
 struct HuffmanNode* buildHuffmanTree(int* frequencies);
-char** buildCodes(struct HuffmanNode* root);
+struct HuffmanCode* buildCodes(struct HuffmanNode* root);
+void buildCodesHelper(
+    struct HuffmanNode* node, struct HuffmanCode* codes, char* code);
 char* createHeader(char* codes, char* text);
-
-struct HuffmanNode* pop(struct LinkedList* list);
 #endif

@@ -46,7 +46,7 @@ BINS := $(BUILD_DIR)$(TARGET)
 ## Command Section: change these variables based on your commands
 # -----------------------------------------------------------------------------
 # Targets
-.PHONY: all $(TARGET) test clean
+.PHONY: all $(TARGET) test clean debug
 
 # Default target: build the program
 all: $(BINS)
@@ -67,6 +67,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 # Test target: build and test the program against sample input
 test: $(BINS)
 	@echo "Testing $(TARGET)..."
+	@echo "Testing memory leaks..."
 	@echo "Comparing output to ~pn-cs357/demos/htable:"
 	$(BINS) $(TEST_INPUT)
 # diff <($(BINS) < $(TEST_INPUT)) <(~pn-cs357/demos/htable < $(TEST_INPUT))
@@ -74,3 +75,12 @@ test: $(BINS)
 # Clean target: remove build artifacts and non-essential files
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+# Debug target: use gdb to debug the program
+debug: $(BINS)
+	@mkdir -p $(OBJ_DIR) # Create the object directory if it doesn't exist
+	$(CC) $(CFLAGS) -g $(INCS) -c $< -o $@
+	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
+	$(LD) $(LDFLAGS) $(OBJS) -o $(BINS)
+	@echo "Debugging $(TARGET)..."
+	gdb $(BINS)

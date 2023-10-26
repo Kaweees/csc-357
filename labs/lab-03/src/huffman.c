@@ -8,9 +8,10 @@
 
 #include "safe_mem.h"
 
-#define MAX_CODE_LENGTH   256  /* total number of characters in ASCII */
-#define SPACE_CHAR        32   /* asci code for a space */
-#define STRING_TERMINATOR '\0' /* null terminator for a string */
+#define MAX_CODE_LENGTH     256  /* total number of characters in ASCII */
+#define SPACE_CHAR          32   /* asci code for a space */
+#define STRING_TERMINATOR   '\0' /* null terminator for a string */
+#define INITIAL_BUFFER_SIZE 128  /* Initial size of the buffer in bytes */
 
 /**
  * Reads a file and returns its contents as a singular string
@@ -23,6 +24,10 @@ struct FileContent* readText(FILE* file) {
 
   fseek(file, 0, SEEK_END);  // Move the file pointer to the end of the file
   file_stuff->file_size = ftell(file);  // Get the size of the file
+  if (file_stuff->file_size == 0) {
+    safe_free(file_stuff);
+    return NULL;
+  }
   fseek(file, 0, SEEK_SET);  // Reset the file pointer to the beginning
 
   /* Allocate memory for the file contents */
@@ -31,7 +36,7 @@ struct FileContent* readText(FILE* file) {
   if (fread(file_stuff->file_contents, 1, file_stuff->file_size, file) !=
       file_stuff->file_size) {
     perror("Error reading file");
-    free(file_stuff);
+    safe_free(file_stuff);
     fclose(file);
     exit(EXIT_FAILURE);
   }
@@ -83,8 +88,49 @@ struct HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b) {
   return combined;
 }
 
-char** buildCodes(struct HuffmanNode* root) {
-  char** codes = (char**)safe_malloc(sizeof(char*) * MAX_CODE_LENGTH);
+void buildCodesHelper(
+    struct HuffmanNode* node, struct HuffmanCode* codes, char* code) {
+  if (node == NULL || code == NULL) {
+    printf("its so over");
+    return;
+  }
+  printf("here\n");
+  if (node->left == NULL && node->right == NULL) {
+    codes[(int)node->char_ascii].code_contents = code;
+    codes[(int)node->char_ascii].code_length = strlen(code);
+  } else {
+    char* left_code = (char*)safe_calloc(sizeof(char), MAX_CODE_LENGTH);
+    char* right_code = (char*)safe_calloc(sizeof(char), MAX_CODE_LENGTH);
+    strcpy(left_code, code);
+    strcpy(right_code, code);
+    strcat(left_code, "0");
+    strcat(right_code, "1");
+    printf("%s\n", left_code);
+    printf("%p\n", left_code);
+    buildCodesHelper(node->left, codes, left_code);
+    buildCodesHelper(node->right, codes, right_code);
+  }
+}
+
+/**
+ * Generate a lookup table for each of the codes present in the
+ * @param a - a pointer to the first HuffmanNode
+ * @param b - a pointer to the second HuffmanNode
+ * @return the root of the new tree
+ */
+struct HuffmanCode* buildCodes(struct HuffmanNode* root) {
+  struct HuffmanCode* codes = (struct HuffmanCode*)safe_malloc(
+      sizeof(struct HuffmanCode) * MAX_CODE_LENGTH);
+  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+    struct HuffmanCode* code =
+        (struct HuffmanCode*) safe_malloc(sizeof(struct HuffmanCode));
+    code->code_contents = (char*)safe_calloc(sizeof(char), MAX_CODE_LENGTH);
+    code->code_length = 0;
+    code->code_capacity = MAX_CODE_LENGTH;
+    codes[i] = *code;
+  }
+  printf("here\n");
+  buildCodesHelper(root, codes, "");
   return codes;
 }
 
@@ -124,11 +170,14 @@ int* parseHeader(char* header, char* text) {
  * @return an array of character frequencies in ascending asci order
  */
 int* countFrequencies(struct FileContent* text) {
+  if (text == NULL) {
+    return NULL;
+  }
   int* freq_list = (int*)safe_calloc(MAX_CODE_LENGTH, sizeof(int));
   int i = 0;
   for (i = 0; i < text->file_size; i++) {
-    /* increment the frequency of the corresponding character */ 
-    freq_list[(int) text->file_contents[i]]++;
+    /* increment the frequency of the corresponding character */
+    freq_list[(int)text->file_contents[i]]++;
   }
   return freq_list;
 }
@@ -198,6 +247,9 @@ void mergeSort(struct HuffmanNode arr[], int l, int r) {
  * @return the root of the Huffman tree
  */
 struct HuffmanNode* buildHuffmanTree(int* frequencies) {
+  if (frequencies == NULL) {
+    return NULL;
+  }
   struct HuffmanNode* root = NULL;
   struct HuffmanNode* non_zero_nodes = (struct HuffmanNode*)safe_malloc(
       sizeof(struct HuffmanNode) * MAX_CODE_LENGTH); /* node list containing
@@ -210,13 +262,13 @@ HuffmanNodes of characters with non-zero frequencies */
       node.right = NULL;
       node.char_freq = frequencies[i];
       node.char_ascii = i;
-      non_zero_nodes[non_zero_nodes_size] = node;
-      non_zero_nodes_size++;
+      non_zero_nodes[non_zero_nodes_size++] = node;
     }
   }
   non_zero_nodes = (struct HuffmanNode*)safe_realloc(
       non_zero_nodes, non_zero_nodes_size * sizeof(struct HuffmanNode));
   if (non_zero_nodes_size == 0) {
+    safe_free(non_zero_nodes);
     return root;
   } else {
     while (non_zero_nodes_size > 1) {

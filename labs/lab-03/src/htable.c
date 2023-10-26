@@ -12,6 +12,8 @@
 #define CARRIAGE_CHAR          13   /* asci code for a carriage return */
 #define STRING_TERMINATOR      '\0' /* null terminator for a string */
 #define STDOUT_FILE_DESCRIPTOR 1
+#define MAX_CODE_LENGTH     256  /* total number of characters in ASCII */
+
 
 /**
  * Reads a file and returns its contents as a singular string
@@ -20,22 +22,26 @@
  */
 void htable(FILE* file) {
   struct FileContent* file_text = readText(file);
+  /* char* header = createHeader(codes, text); */
   printf("%s\n", file_text->file_contents);
   int* char_freq = countFrequencies(file_text);
   printf("%d\n", char_freq[(int)'d']);
-  /*
-  
   struct HuffmanNode* root = buildHuffmanTree(char_freq);
-  char** codes = buildCodes(root);
-  
-  safe_free(root);
-  safe_free(codes);
-  */
+  struct HuffmanCode* codes = buildCodes(root);
   safe_free(file_text->file_contents);
   safe_free(file_text);
   safe_free(char_freq);
-
+  safe_free(root);
+  /* safe_free(codes); */
   
+  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+    if (codes[i].code_length != 0) {
+      printf("%i | 0x%02x: %s\n", (int) codes[i].code_length, i, codes[i].code_contents);
+    }
+    else {
+      printf("0x%02x: %s\n", i, codes[i].code_contents);
+    }
+  }
 }
 
 int main(int argc, char* argv[]) {
