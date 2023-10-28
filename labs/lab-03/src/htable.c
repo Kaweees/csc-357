@@ -26,22 +26,17 @@ void htable(FILE* file) {
   printf("%s\n", file_text->file_contents);
   int* char_freq = countFrequencies(file_text);
   printf("%d\n", char_freq[(int)'d']);
+  /*
+
   struct HuffmanNode* root = buildHuffmanTree(char_freq);
-  struct HuffmanCode* codes = buildCodes(root);
+  char** codes = buildCodes(root);
+
+  safe_free(root);
+  safe_free(codes);
+  */
   safe_free(file_text->file_contents);
   safe_free(file_text);
   safe_free(char_freq);
-  safe_free(root);
-  /* safe_free(codes); */
-  
-  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
-    if (codes[i].code_length != 0) {
-      printf("%i | 0x%02x: %s\n", (int) codes[i].code_length, i, codes[i].code_contents);
-    }
-    else {
-      printf("0x%02x: %s\n", i, codes[i].code_contents);
-    }
-  }
 }
 
 int main(int argc, char* argv[]) {
