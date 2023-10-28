@@ -123,7 +123,7 @@ struct HuffmanCode* buildCodes(struct HuffmanNode* root) {
       sizeof(struct HuffmanCode) * MAX_CODE_LENGTH);
   for (int i = 0; i < MAX_CODE_LENGTH; i++) {
     struct HuffmanCode* code =
-        (struct HuffmanCode*) safe_malloc(sizeof(struct HuffmanCode));
+        (struct HuffmanCode*)safe_malloc(sizeof(struct HuffmanCode));
     code->code_contents = (char*)safe_calloc(sizeof(char), MAX_CODE_LENGTH);
     code->code_length = 0;
     code->code_capacity = MAX_CODE_LENGTH;

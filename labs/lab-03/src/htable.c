@@ -12,8 +12,7 @@
 #define CARRIAGE_CHAR          13   /* asci code for a carriage return */
 #define STRING_TERMINATOR      '\0' /* null terminator for a string */
 #define STDOUT_FILE_DESCRIPTOR 1
-#define MAX_CODE_LENGTH     256  /* total number of characters in ASCII */
-
+#define MAX_CODE_LENGTH        256 /* total number of characters in ASCII */
 
 /**
  * Reads a file and returns its contents as a singular string
