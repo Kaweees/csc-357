@@ -114,7 +114,6 @@ HuffmanNode* extractMin(PriorityQueue* pq) {
     pq->front[0] = pq->front[pq->size];
     minHeapify(pq, 0);
   }
-
   return temp;
 }
 

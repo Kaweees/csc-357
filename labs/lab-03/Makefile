@@ -10,7 +10,7 @@ TARGET := htable
 # The compiler executable.
 CC := gcc
 # The compiler flags.
-CFLAGS := -g -Wall -pedantic
+CFLAGS := -Wall
 # The linker executable.
 LD := gcc
 # The linker flags.
@@ -87,8 +87,7 @@ test: $(BINS)
 	@echo "Testing memory leaks..."
 	$(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS) $(TEST_INPUT)
 	@echo "Comparing output to $(REF_EXE):"
-	diff <($(BINS) < $(TEST_INPUT)) <($(REF_EXE) < $(TEST_INPUT))
-# $(BINS) hencode input.txt output.txt
+	diff <($(BINS) $(TEST_INPUT)) <($(REF_EXE) $(TEST_INPUT))
 # $(BINS) hdecode output.txt decoded.txt	
 
 # Clean target: remove build artifacts and non-essential files
