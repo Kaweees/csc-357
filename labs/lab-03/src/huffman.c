@@ -136,5 +136,5 @@ void freeHuffmanTree(HuffmanNode* node) {
   }
   freeHuffmanTree(node->left);
   freeHuffmanTree(node->right);
-  safe_free(node);  /* Free the current node after its children are freed */
+  safe_free(node); /* Free the current node after its children are freed */
 }
