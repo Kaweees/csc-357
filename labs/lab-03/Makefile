@@ -12,19 +12,31 @@ CC := gcc
 # The compiler flags.
 CFLAGS := -g -Wall -pedantic
 # The linker executable.
-LD = gcc
+LD := gcc
 # The linker flags.
-LDFLAGS = -Wall
+LDFLAGS := -Wall
 # The shell executable.
 SHELL := /bin/bash
+
+## Testing Suite Section: change these variables based on your testing suite
+# -----------------------------------------------------------------------------
+# The memory checker executable.
+MEMCHECK := valgrind
+# The memory checker flags.
+MEMCHECK_FLAGS := --leak-check=full --show-leak-kinds=all --track-origins=yes
+# The debugger executable.
+DEBUGGER := gdb
+# The debugger flags.
+DEBUGGER_FLAGS := 
+
 # The name of the test input file
-TEST_INPUT = test_input.txt
+TEST_INPUT := test_input.txt
 # The name of the test output file
-TEST_OUTPUT = 
+TEST_OUTPUT := 
 # The name of the reference executable
-REF_EXE = ~pn-cs357/demos/htable
+REF_EXE := ~pn-cs357/demos/htable
 # The name of the reference output file
-REF_OUTPUT = 
+REF_OUTPUT := 
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -73,7 +85,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 test: $(BINS)
 	@echo "Testing $(TARGET)..."
 	@echo "Testing memory leaks..."
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(BINS) $(TEST_INPUT)
+	$(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS) $(TEST_INPUT)
 	@echo "Comparing output to $(REF_EXE):"
 	diff <($(BINS) < $(TEST_INPUT)) <($(REF_EXE) < $(TEST_INPUT))
 # $(BINS) hencode input.txt output.txt
@@ -83,11 +95,11 @@ test: $(BINS)
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
 
-# Debug target: use gdb to debug the program
+# Debug target: use a debugger to debug the program
 debug: $(BINS)
 	@mkdir -p $(OBJ_DIR) # Create the object directory if it doesn't exist
 	$(CC) $(CFLAGS) -g $(INCS) -c $< -o $@
 	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
 	$(LD) $(LDFLAGS) $(OBJS) -o $(BINS)
 	@echo "Debugging $(TARGET)..."
-	gdb $(BINS)
+	$(DEBUGGER) $(BINS)
