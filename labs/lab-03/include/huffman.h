@@ -60,8 +60,9 @@ void minHeapify(struct PriorityQueue* pq, int idx);
 void insertNode(PriorityQueue* pq, HuffmanNode* node);
 HuffmanNode* extractMin(PriorityQueue* pq);
 HuffmanNode* buildHuffmanTree(int* frequencies, int size);
+void freeHuffmanTree(HuffmanNode* node);
 int* countFrequencies(FILE* file);
 void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str);
 char** buildCodes(HuffmanNode* node);
-void htable(FILE* file);
+void freeHuffmanCodes(char** huffman_codes);
 #endif

@@ -1,243 +1,117 @@
-
-#include "huffman.h"
-
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <unistd.h>
 #include "safe_mem.h"
-
-#define MAX_CODE_LENGTH     256  /* total number of characters in ASCII */
-#define SPACE_CHAR          32   /* asci code for a space */
-#define STRING_TERMINATOR   '\0' /* null terminator for a string */
-#define INITIAL_BUFFER_SIZE 128  /* Initial size of the buffer in bytes */
+#include "huffman.h"
 
 /**
- * Reads a file and returns its contents as a singular string
- * @param file - a pointer to the file to read from
- * @return a pointer to the string containing the file's contents
+ * Creates a Huffman node
+ *
+ * @param ascii - the ASCII character
+ * @param freq - the frequency of the character
+ * @param left - the left child of the node
+ * @param right - the right child of the node
+ * @return a pointer to the node
  */
-struct FileContent* readText(FILE* file) {
-  struct FileContent* file_stuff =
-      (struct FileContent*)safe_malloc(sizeof(struct FileContent));
+HuffmanNode* createNode(
+    char ascii, int freq, HuffmanNode* left, HuffmanNode* right) {
+  HuffmanNode* newNode = (HuffmanNode*)safe_malloc(sizeof(HuffmanNode));
+  newNode->char_ascii = ascii;
+  newNode->char_freq = freq;
+  newNode->left = left;
+  newNode->right = right;
+  return newNode;
+}
 
-  fseek(file, 0, SEEK_END);  // Move the file pointer to the end of the file
-  file_stuff->file_size = ftell(file);  // Get the size of the file
-  if (file_stuff->file_size == 0) {
-    safe_free(file_stuff);
+/**
+ * Creates a Priority Queue
+ *
+ * @param capacity - the capacity of the queue
+ * @return a pointer to the queue
+ */
+PriorityQueue* createPriorityQueue(unsigned int capacity) {
+  PriorityQueue* pq = (PriorityQueue*)safe_malloc(sizeof(PriorityQueue));
+  pq->size = 0;
+  pq->capacity = capacity;
+  pq->front = (HuffmanNode**)safe_malloc(sizeof(HuffmanNode*) * capacity);
+  return pq;
+}
+
+/**
+ * Swaps the position of two HuffmanNodes in a PriorityQueue
+ *
+ * @param pq - a pointer to the PriorityQueue
+ * @param a - a pointer to the first HuffmanNode
+ * @param b - a pointer to the second HuffmanNode
+ */
+void swapNodes(PriorityQueue* pq, int i, int j) {
+  HuffmanNode* temp = pq->front[i];
+  pq->front[i] = pq->front[j];
+  pq->front[j] = temp;
+}
+
+/**
+ * Maintains the min-heap property of the PriorityQueue
+  *
+  * @param pq - a pointer to the PriorityQueue
+  * @param idx - the index of the node to heapify
+ */
+void minHeapify(struct PriorityQueue* pq, int idx) {
+  int smallest = idx;
+  int left = 2 * idx + 1;
+  int right = 2 * idx + 2;
+
+  if (left < pq->size && pq->front[left]->char_freq < pq->front[smallest]->char_freq)
+    smallest = left;
+
+  if (right < pq->size && pq->front[right]->char_freq < pq->front[smallest]->char_freq)
+    smallest = right;
+
+  if (smallest != idx) {
+    swapNodes(pq, idx, smallest);
+    minHeapify(pq, smallest);
+  }
+}
+
+/**
+ * Insert a HuffmanNode into the PriorityQueue
+  *
+  * @param pq - a pointer to the PriorityQueue
+  * @param node - a pointer to the HuffmanNode to insert
+ */
+void insertNode(PriorityQueue* pq, HuffmanNode* node) {
+  int i = pq->size;
+  pq->size++;
+  pq->front[i] = node;
+
+  while (i > 0 && pq->front[i]->char_freq < pq->front[(i - 1) / 2]->char_freq) {
+    swapNodes(pq, i, (i - 1) / 2);
+    i = (i - 1) / 2;
+  }
+}
+
+/**
+ * Extracts the minimum HuffmanNode from the PriorityQueue
+  *
+  * @param pq - a pointer to the PriorityQueue
+  * @return a pointer to the minimum HuffmanNode
+ */
+HuffmanNode* extractMin(PriorityQueue* pq) {
+  HuffmanNode* temp;
+  if (pq->size <= 0) {
     return NULL;
   }
-  fseek(file, 0, SEEK_SET);  // Reset the file pointer to the beginning
+  temp = pq->front[0];
+  pq->size--;
 
-  /* Allocate memory for the file contents */
-  file_stuff->file_contents = (char*)safe_malloc(file_stuff->file_size + 1);
-  /* Read the file contents into the allocated memory */
-  if (fread(file_stuff->file_contents, 1, file_stuff->file_size, file) !=
-      file_stuff->file_size) {
-    perror("Error reading file");
-    safe_free(file_stuff);
-    fclose(file);
-    exit(EXIT_FAILURE);
-  }
-  /* Null-terminate the string */
-  file_stuff->file_contents[file_stuff->file_size] = '\0';
-  /* Close the file */
-  fclose(file);
-  return file_stuff;
-}
-
-/**
- * Returns whether a HuffmanNode should come before another HuffmanNode.
- Determined by which node appears more frequently than another, with their Asci
- values used to break ties.
- * @param a - a pointer to the first HuffmanNode
- * @param b - a pointer to the second HuffmanNode
- * @return 1 if a should come before b, 0 otherwise
- */
-int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b) {
-  if (a->char_freq == b->char_freq) {
-    return a->char_ascii < b->char_ascii;
-  } else {
-    return a->char_freq < b->char_freq;
-  }
-}
-
-/**
- * Superimposes a Huffman tree onto a Huffman tree. The root of the new tree is
- * the root of the first tree, and the left and right children of the root are
- * the roots of the second and third trees, respectively.
- * @param a - a pointer to the first HuffmanNode
- * @param b - a pointer to the second HuffmanNode
- * @return the root of the new tree
- */
-struct HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b) {
-  struct HuffmanNode* combined =
-      (struct HuffmanNode*)safe_malloc(sizeof(struct HuffmanNode));
-  char min_char_ascii =
-      (a->char_ascii < b->char_ascii) ? a->char_ascii : b->char_ascii;
-  if (comesBefore(a, b)) {
-    combined->left = a;
-    combined->right = b;
-  } else {
-    combined->left = b;
-    combined->right = a;
-  }
-  combined->char_ascii = min_char_ascii;
-  combined->char_freq = a->char_freq + b->char_freq;
-  return combined;
-}
-
-void buildCodesHelper(
-    struct HuffmanNode* node, struct HuffmanCode* codes, char* code) {
-  if (node == NULL || code == NULL) {
-    printf("its so over");
-    return;
-  }
-  printf("here\n");
-  if (node->left == NULL && node->right == NULL) {
-    codes[(int)node->char_ascii].code_contents = code;
-    codes[(int)node->char_ascii].code_length = strlen(code);
-  } else {
-    char* left_code = (char*)safe_calloc(sizeof(char), MAX_CODE_LENGTH);
-    char* right_code = (char*)safe_calloc(sizeof(char), MAX_CODE_LENGTH);
-    strcpy(left_code, code);
-    strcpy(right_code, code);
-    strcat(left_code, "0");
-    strcat(right_code, "1");
-    printf("%s\n", left_code);
-    printf("%p\n", left_code);
-    buildCodesHelper(node->left, codes, left_code);
-    buildCodesHelper(node->right, codes, right_code);
-  }
-}
-
-/**
- * Generate a lookup table for each of the codes present in the
- * @param a - a pointer to the first HuffmanNode
- * @param b - a pointer to the second HuffmanNode
- * @return the root of the new tree
- */
-struct HuffmanCode* buildCodes(struct HuffmanNode* root) {
-  struct HuffmanCode* codes = (struct HuffmanCode*)safe_malloc(
-      sizeof(struct HuffmanCode) * MAX_CODE_LENGTH);
-  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
-    struct HuffmanCode* code =
-        (struct HuffmanCode*)safe_malloc(sizeof(struct HuffmanCode));
-    code->code_contents = (char*)safe_calloc(sizeof(char), MAX_CODE_LENGTH);
-    code->code_length = 0;
-    code->code_capacity = MAX_CODE_LENGTH;
-    codes[i] = *code;
-  }
-  printf("here\n");
-  buildCodesHelper(root, codes, "");
-  return codes;
-}
-
-char* createHeader(char* codes, char* text) {
-  // for (int i = 0; i < strlen()) HuffmanNode* pop(struct LinkedList * list);
-  char* header = (char*)safe_malloc(sizeof(char) * MAX_CODE_LENGTH);
-  return header;
-}
-
-/**
- * Takes a string of the form "x y z" and returns an array of frequencies in
- * ascending asci order
- *
- * @param file - a pointer to the file to read the line from
- * @return a pointer to the line read from the file
- */
-int* parseHeader(char* header, char* text) {
-  int* freq_list = (int*)safe_malloc(sizeof(int) * MAX_CODE_LENGTH);
-  int ch; /* character read from file */
-  int header_length = strlen(header);
-  int i = 0;
-  while (i < header_length) {
-    while ((ch = header[i]) != SPACE_CHAR) {
-      i = (i * 10) + (ch - '0');
-      i++;
-    }
-    freq_list[i]++;
-    i = 0;
-  }
-  return freq_list;
-}
-
-/**
- * Opens a file and counts the frequency of each character in the file
- *
- * @param file - a pointer to the file to count the frequencies of
- * @return an array of character frequencies in ascending asci order
- */
-int* countFrequencies(struct FileContent* text) {
-  if (text == NULL) {
-    return NULL;
-  }
-  int* freq_list = (int*)safe_calloc(MAX_CODE_LENGTH, sizeof(int));
-  int i = 0;
-  for (i = 0; i < text->file_size; i++) {
-    /* increment the frequency of the corresponding character */
-    freq_list[(int)text->file_contents[i]]++;
-  }
-  return freq_list;
-}
-
-void merge(struct HuffmanNode arr[], int l, int m, int r) {
-  int i, j, k;
-  int n1 = m - l + 1;
-  int n2 = r - m;
-
-  // Create temporary arrays
-  struct HuffmanNode L[n1], R[n2];
-
-  // Copy data to temporary arrays L[] and R[]
-  for (i = 0; i < n1; i++) L[i] = arr[l + i];
-  for (j = 0; j < n2; j++) R[j] = arr[m + 1 + j];
-
-  // Merge the temporary arrays back into arr[l..r]
-  i = 0;  // Initial index of first subarray
-  j = 0;  // Initial index of second subarray
-  k = l;  // Initial index of merged subarray
-  while (i < n1 && j < n2) {
-    if (comesBefore(&L[i], &R[j]) == 0) {
-      arr[k] = L[i];
-      i++;
-    } else {
-      arr[k] = R[j];
-      j++;
-    }
-    k++;
+  if (pq->size > 0) {
+    pq->front[0] = pq->front[pq->size];
+    minHeapify(pq, 0);
   }
 
-  // Copy the remaining elements of L[], if there are any
-  while (i < n1) {
-    arr[k] = L[i];
-    i++;
-    k++;
-  }
-
-  // Copy the remaining elements of R[], if there are any
-  while (j < n2) {
-    arr[k] = R[j];
-    j++;
-    k++;
-  }
-}
-
-// l is for left index and r is right index of the
-// sub-array of arr to be sorted
-void mergeSort(struct HuffmanNode arr[], int l, int r) {
-  if (l < r) {
-    // Same as (l+r)/2, but avoids overflow for large l and r
-    int m = l + (r - l) / 2;
-
-    // Sort first and second halves
-    mergeSort(arr, l, m);
-    mergeSort(arr, m + 1, r);
-
-    // Merge the sorted halves
-    merge(arr, l, m, r);
-  }
+  return temp;
 }
 
 /**
@@ -246,42 +120,96 @@ void mergeSort(struct HuffmanNode arr[], int l, int r) {
  * @param frequencies - an array of character frequencies in ascending asci
  * @return the root of the Huffman tree
  */
-struct HuffmanNode* buildHuffmanTree(int* frequencies) {
-  if (frequencies == NULL) {
-    return NULL;
-  }
-  struct HuffmanNode* root = NULL;
-  struct HuffmanNode* non_zero_nodes = (struct HuffmanNode*)safe_malloc(
-      sizeof(struct HuffmanNode) * MAX_CODE_LENGTH); /* node list containing
-HuffmanNodes of characters with non-zero frequencies */
-  int non_zero_nodes_size = 0;
-  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+HuffmanNode* buildHuffmanTree(int* frequencies, int size) {
+  PriorityQueue* pq = createPriorityQueue(size);
+  int i;
+  HuffmanNode* root;
+  for (i = 0; i < size; i++) {
     if (frequencies[i] > 0) {
-      struct HuffmanNode node;
-      node.left = NULL;
-      node.right = NULL;
-      node.char_freq = frequencies[i];
-      node.char_ascii = i;
-      non_zero_nodes[non_zero_nodes_size++] = node;
+      HuffmanNode* node = createNode(i, frequencies[i], NULL, NULL);
+      insertNode(pq, node);
     }
   }
-  non_zero_nodes = (struct HuffmanNode*)safe_realloc(
-      non_zero_nodes, non_zero_nodes_size * sizeof(struct HuffmanNode));
-  if (non_zero_nodes_size == 0) {
-    safe_free(non_zero_nodes);
+  while (pq->size > 1) {
+    HuffmanNode* left = extractMin(pq);
+    HuffmanNode* right = extractMin(pq);
+    HuffmanNode* combined = createNode(0, left->char_freq + right->char_freq, NULL, NULL);
+    combined->left = left;
+    combined->right = right;
+    insertNode(pq, combined);
+  }
+
+  root = extractMin(pq);
+    free(pq->front);
+    free(pq);
     return root;
+}
+
+/**
+ * Frees the Huffman tree nodes and associated memory
+ *
+ * @param node - a pointer to the root of the Huffman tree
+ */
+void freeHuffmanTree(HuffmanNode* node) {
+  if (node == NULL) {
+    return;
+  }
+  freeHuffmanTree(node->left);
+  freeHuffmanTree(node->right);
+  safe_free(node); // Free the current node after its children are freed
+}
+
+/**
+ * Opens a file and counts the frequency of each character in the file
+ *
+ * @param file - a pointer to the file to count the frequencies of
+ * @return an array of character frequencies in ascending asci order
+ */
+int* countFrequencies(FILE* file) {
+  int c;
+  int* char_freq = (int*)safe_calloc(MAX_CODE_LENGTH, sizeof(int));
+  while ((c = fgetc(file)) != EOF) {
+    char_freq[c]++;
+  }
+  return char_freq;
+}
+
+void buildCodesHelper(
+    HuffmanNode* node, char** huffman_codes, char* code_str) {
+  if (node == NULL) {
+    return;
+  }
+  if (node->left == NULL && node->right == NULL) {
+    huffman_codes[(int)node->char_ascii] = strdup(code_str);
   } else {
-    while (non_zero_nodes_size > 1) {
-      mergeSort(non_zero_nodes, 0, non_zero_nodes_size - 1);
-      struct HuffmanNode a = non_zero_nodes[non_zero_nodes_size - 1];
-      struct HuffmanNode b = non_zero_nodes[non_zero_nodes_size - 2];
-      struct HuffmanNode* combined = combine(&a, &b);
-      non_zero_nodes[0] = *combined;
-      free(combined);
-      non_zero_nodes_size--;
-    }
-    root = (struct HuffmanNode*)realloc(
-        non_zero_nodes, non_zero_nodes_size * sizeof(struct HuffmanNode));
-    return root;
+    char left_code[strlen(code_str) + 2];
+    char right_code[strlen(code_str) + 2];
+    sprintf(left_code, "%s0", code_str);
+    sprintf(right_code, "%s1", code_str);
+    buildCodesHelper(node->left, huffman_codes, left_code);
+    buildCodesHelper(node->right, huffman_codes, right_code);
   }
+}
+
+char** buildCodes(HuffmanNode* node) {
+  char** huffman_codes = (char**)calloc(MAX_CODE_LENGTH, sizeof(char*));
+  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+    huffman_codes[i] = NULL;
+  }
+  buildCodesHelper(node, huffman_codes, "");
+  return huffman_codes;
+}
+
+/**
+ * Frees the memory allocated for Huffman codes
+ *
+ * @param huffman_codes - an array of Huffman codes
+ */
+void freeHuffmanCodes(char** huffman_codes) {
+  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+    if (huffman_codes[i] != NULL) {
+      safe_free(huffman_codes[i]);
+    }
+  }
+  safe_free(huffman_codes);
 }
