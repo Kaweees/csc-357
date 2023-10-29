@@ -3,12 +3,8 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 
-#define INITIAL_BUFFER_SIZE    128  /* Initial size of the buffer in bytes */
-#define NEWLINE_CHAR           10   /* asci code for a newline */
-#define CARRIAGE_CHAR          13   /* asci code for a carriage return */
-#define STRING_TERMINATOR      '\0' /* null terminator for a string */
-#define STDOUT_FILE_DESCRIPTOR 1
 #define MAX_CODE_LENGTH        256 /* total number of characters in ASCII */
+#define ARGUEMENTS_AMOUNT               2   /* number of arguments for the program */
 
 typedef struct HuffmanNode HuffmanNode;
 typedef struct FileContent FileContent;

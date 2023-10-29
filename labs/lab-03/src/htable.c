@@ -27,7 +27,7 @@ void htable(FILE* file) {
 }
 
 int main(int argc, char* argv[]) {
-  if (argc == 2) {
+  if (argc == ARGUEMENTS_AMOUNT) {
     FILE* infile;
     infile = fopen(*(argv + 1), "r");
     if (infile == NULL) {
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     }
   } else {
     fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
-    return 1;
+    return EXIT_FAILURE;
   }
   return 0;
 }

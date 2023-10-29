@@ -19,6 +19,12 @@ LDFLAGS = -Wall
 SHELL := /bin/bash
 # The name of the test input file
 TEST_INPUT = test_input.txt
+# The name of the test output file
+TEST_OUTPUT = 
+# The name of the reference executable
+REF_EXE = ~pn-cs357/demos/htable
+# The name of the reference output file
+REF_OUTPUT = 
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -68,13 +74,10 @@ test: $(BINS)
 	@echo "Testing $(TARGET)..."
 	@echo "Testing memory leaks..."
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(BINS) $(TEST_INPUT)
-	@echo "Comparing output to ~pn-cs357/demos/htable:"
-	$(BINS) $(TEST_INPUT)
-	diff input.txt decoded.txt
-
+	@echo "Comparing output to $(REF_EXE):"
+	diff <($(BINS) < $(TEST_INPUT)) <($(REF_EXE) < $(TEST_INPUT))
 # $(BINS) hencode input.txt output.txt
 # $(BINS) hdecode output.txt decoded.txt	
-# diff <($(BINS) < $(TEST_INPUT)) <(~pn-cs357/demos/htable < $(TEST_INPUT))
 
 # Clean target: remove build artifacts and non-essential files
 clean:
