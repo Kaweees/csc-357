@@ -3,6 +3,17 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 
+#define INITIAL_BUFFER_SIZE    128  /* Initial size of the buffer in bytes */
+#define NEWLINE_CHAR           10   /* asci code for a newline */
+#define CARRIAGE_CHAR          13   /* asci code for a carriage return */
+#define STRING_TERMINATOR      '\0' /* null terminator for a string */
+#define STDOUT_FILE_DESCRIPTOR 1
+#define MAX_CODE_LENGTH        256 /* total number of characters in ASCII */
+
+typedef struct HuffmanNode HuffmanNode;
+typedef struct FileContent FileContent;
+typedef struct HuffmanCode HuffmanCode;
+
 /* Represents the contents of a file */
 struct FileContent {
   /* The length of the file contents in bytes */
@@ -23,6 +34,13 @@ struct HuffmanNode {
   struct HuffmanNode* right;
 };
 
+/* Represents a priority queue (min-heap) of Huffman nodes for building a Huffman tree */
+typedef struct PriorityQueue {
+  HuffmanNode** front;
+  int size;
+  int capacity;
+} PriorityQueue;
+
 /* Represents a Huffman code for a character */
 struct HuffmanCode {
   /* The Huffman code */
@@ -33,13 +51,15 @@ struct HuffmanCode {
   size_t code_capacity;
 };
 
-struct FileContent* readText(FILE* file);
-int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b);
-struct HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b);
-int* countFrequencies(struct FileContent*);
-struct HuffmanNode* buildHuffmanTree(int* frequencies);
-struct HuffmanCode* buildCodes(struct HuffmanNode* root);
-void buildCodesHelper(
-    struct HuffmanNode* node, struct HuffmanCode* codes, char* code);
-char* createHeader(char* codes, char* text);
+HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left, HuffmanNode* right);
+PriorityQueue* createPriorityQueue(unsigned int capacity);
+void swapNodes(PriorityQueue* pq, int i, int j);
+void minHeapify(struct PriorityQueue* pq, int idx);
+void insertNode(PriorityQueue* pq, HuffmanNode* node);
+HuffmanNode* extractMin(PriorityQueue* pq);
+HuffmanNode* buildHuffmanTree(int* frequencies, int size);
+int* countFrequencies(FILE* file);
+void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str);
+char** buildCodes(HuffmanNode* node);
+void htable(FILE* file);
 #endif

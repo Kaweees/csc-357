@@ -1,5 +1,4 @@
-# Makefile for compiling, linking, and flashing AVR programs to an microcontroller of choice
-
+# Makefile for compiling, linking, and building the program.
 # Begin Variables Section
 
 ## Program Section: change these variables based on your program
@@ -11,7 +10,7 @@ TARGET := htable
 # The compiler executable.
 CC := gcc
 # The compiler flags.
-CFLAGS := -g -Wall
+CFLAGS := -g -Wall -pedantic
 # The linker executable.
 LD = gcc
 # The linker flags.
@@ -68,8 +67,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 test: $(BINS)
 	@echo "Testing $(TARGET)..."
 	@echo "Testing memory leaks..."
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes $(BINS) $(TEST_INPUT)
 	@echo "Comparing output to ~pn-cs357/demos/htable:"
 	$(BINS) $(TEST_INPUT)
+	diff input.txt decoded.txt
+
+# $(BINS) hencode input.txt output.txt
+# $(BINS) hdecode output.txt decoded.txt	
 # diff <($(BINS) < $(TEST_INPUT)) <(~pn-cs357/demos/htable < $(TEST_INPUT))
 
 # Clean target: remove build artifacts and non-essential files
