@@ -34,7 +34,8 @@ struct HuffmanNode {
   struct HuffmanNode* right;
 };
 
-/* Represents a priority queue (min-heap) of Huffman nodes for building a Huffman tree */
+/* Represents a priority queue (min-heap) of Huffman nodes for building a
+ * Huffman tree */
 typedef struct PriorityQueue {
   HuffmanNode** front;
   int size;
@@ -51,7 +52,8 @@ struct HuffmanCode {
   size_t code_capacity;
 };
 
-HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left, HuffmanNode* right);
+HuffmanNode* createNode(
+    char ascii, int freq, HuffmanNode* left, HuffmanNode* right);
 PriorityQueue* createPriorityQueue(unsigned int capacity);
 void swapNodes(PriorityQueue* pq, int i, int j);
 void minHeapify(struct PriorityQueue* pq, int idx);
