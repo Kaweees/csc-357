@@ -196,8 +196,9 @@ void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str) {
 }
 
 char** buildCodes(HuffmanNode* node) {
+  int i;
   char** huffman_codes = (char**)calloc(MAX_CODE_LENGTH, sizeof(char*));
-  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+  for (i = 0; i < MAX_CODE_LENGTH; i++) {
     huffman_codes[i] = NULL;
   }
   buildCodesHelper(node, huffman_codes, "");
@@ -210,7 +211,8 @@ char** buildCodes(HuffmanNode* node) {
  * @param huffman_codes - an array of Huffman codes
  */
 void freeHuffmanCodes(char** huffman_codes) {
-  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+  int i;
+  for (i = 0; i < MAX_CODE_LENGTH; i++) {
     if (huffman_codes[i] != NULL) {
       safe_free(huffman_codes[i]);
     }

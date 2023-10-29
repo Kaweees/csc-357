@@ -16,7 +16,8 @@ void htable(FILE* file) {
   int* char_freq = countFrequencies(file);
   HuffmanNode* root = buildHuffmanTree(char_freq, MAX_CODE_LENGTH);
   char** huffman_codes = buildCodes(root);
-  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+  int i;
+  for (i = 0; i < MAX_CODE_LENGTH; i++) {
     if (char_freq[i] > 0) {
       printf("0x%02x: %s\n", i, huffman_codes[i]);
     }
