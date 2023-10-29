@@ -1,20 +1,21 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
+
 #include "huffman.h"
 
 /**
  * Reads a file and returns its contents as a singular string
  * @param file - a pointer to the file to read from
  * @return a pointer to the string containing the file's contents
-  */
+ */
 void htable(FILE* file) {
   int* char_freq = countFrequencies(file);
   if (char_freq == NULL) {
     return;
   }
-  HuffmanNode* root = buildTree(char_freq); 
+  HuffmanNode* root = buildTree(char_freq);
   int i;
   char* code;
   for (i = 0; i < MAX_CODE_LENGTH; i++) {
@@ -23,9 +24,11 @@ void htable(FILE* file) {
         printHuffmanCodes(root, code, 0, i);
         printf("0x%02x: %s\n", i, code);
       }
-    free(code);
+      free(code);
     }
   }
+  freeHuffmanTree(root);
+  free(char_freq);
 }
 
 int main(int argc, char* argv[]) {

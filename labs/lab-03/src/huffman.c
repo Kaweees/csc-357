@@ -1,9 +1,10 @@
+#include "huffman.h"
+
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stddef.h>
 
-#include "huffman.h"
 #include "safe_mem.h"
 
 /**
@@ -15,8 +16,8 @@
  * @param right - the right child of the node
  * @return a pointer to the node
  */
-HuffmanNode* createNode(
-    char ascii, int freq, HuffmanNode* left, HuffmanNode* right, HuffmanNode* next) {
+HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
+    HuffmanNode* right, HuffmanNode* next) {
   HuffmanNode* newNode = (HuffmanNode*)safe_malloc(sizeof(HuffmanNode));
   newNode->char_ascii = ascii;
   newNode->char_freq = freq;
@@ -46,41 +47,42 @@ int* countFrequencies(FILE* file) {
   return char_freq;
 }
 
-void insert(HuffmanNode* head, HuffmanNode* node){
-   HuffmanNode *firstNode;
-   firstNode = head;
-  while((firstNode->next != NULL) && (firstNode->next->char_freq < node->char_freq ||
- (firstNode->next->char_freq == node->char_freq && firstNode->next->char_ascii < node->char_ascii))) {
-     firstNode = firstNode->next;
-   }
-   node->next = firstNode->next;
-   firstNode->next = node;
+void insert(HuffmanNode* head, HuffmanNode* node) {
+  HuffmanNode* firstNode;
+  firstNode = head;
+  while ((firstNode->next != NULL) &&
+         (firstNode->next->char_freq < node->char_freq ||
+             (firstNode->next->char_freq == node->char_freq &&
+                 firstNode->next->char_ascii < node->char_ascii))) {
+    firstNode = firstNode->next;
+  }
+  node->next = firstNode->next;
+  firstNode->next = node;
 }
-  
-HuffmanNode *buildTree(int list[MAX_CODE_LENGTH]) {
-  HuffmanNode *head;
+
+HuffmanNode* buildTree(int list[MAX_CODE_LENGTH]) {
+  HuffmanNode* head;
   int i;
-  
+
   head = createNode(0, 0, NULL, NULL, NULL);
-  /* compares if value in "list" is > 0 */
   for (i = 0; i < MAX_CODE_LENGTH; i++) {
-    HuffmanNode *newNode;
+    HuffmanNode* newNode;
     if (list[i] > 0) {
-      /* create and insert new node */
       newNode = createNode(i, list[i], NULL, NULL, NULL);
       insert(head, newNode);
     }
   }
-  
-  HuffmanNode *leftNode;
-  HuffmanNode *rightNode;
-    
-  /* linked list */
+
+  HuffmanNode* leftNode;
+  HuffmanNode* rightNode;
+
+  /* creates new node with updated freq */
   while (head->next->next != NULL) {
     leftNode = head->next;
     rightNode = head->next->next;
-    /* creates new node with updated freq */
-    HuffmanNode *newNode = createNode(0, leftNode->char_freq + rightNode->char_freq, NULL, NULL, NULL);
+    /* create the new node */
+    HuffmanNode* newNode = createNode(
+        0, leftNode->char_freq + rightNode->char_freq, NULL, NULL, NULL);
     head->next = head->next->next->next;
     leftNode->next = NULL;
     rightNode->next = NULL;
@@ -88,54 +90,51 @@ HuffmanNode *buildTree(int list[MAX_CODE_LENGTH]) {
     newNode->right = rightNode;
     insert(head, newNode);
   }
-  /* move head to next node and free old head*/
-  HuffmanNode *oldHead;
+  /* move the new node with the updated freq to the front */
+  HuffmanNode* oldHead;
   oldHead = head;
-  head = head->next;   
+  head = head->next;
   free(oldHead);
   return head;
 }
-  
-int printHuffmanCodes(HuffmanNode *root, char *code, int top, unsigned char c) {
-  /* Traverse tree */
+
+int printHuffmanCodes(HuffmanNode* root, char* code, int top, unsigned char c) {
+  /* if root is NULL */
   if (root == NULL) {
     return 0;
   }
-  /* left node */
+  /* traversal of the left node */
   if (root->left) {
-    code[top] = 0; /* left node */
+    code[top] = 0;
     if (printHuffmanCodes(root->left, code, top + 1, c)) {
       code[top] = '0';
       return 1;
     }
   }
-  /* right node */
+  /* traversal of the right node */
   if (root->right) {
     if (printHuffmanCodes(root->right, code, top + 1, c)) {
-      /* right node */
       code[top] = '1';
       return 1;
     }
   }
-  /* leaf node */
+  /* if the node is a leaf */
   if (!(root->left) && !(root->right)) {
     return (root->char_ascii == c);
   }
   return 0;
 }
 
-/* free memory */
-void cleanUp(HuffmanNode* root) {
-  if (root == NULL) {
+/**
+ * Frees the Huffman tree nodes and associated memory
+ *
+ * @param node - a pointer to the root of the Huffman tree
+ */
+void freeHuffmanTree(HuffmanNode* node) {
+  if (node == NULL) {
     return;
   }
-  /* left tree */
-  if (root->left) {
-    cleanUp(root->left);
-  }
-  /* right tree */
-  if (root->right) {
-    cleanUp(root->right);
-  }
-  free(root);
+  freeHuffmanTree(node->left);
+  freeHuffmanTree(node->right);
+  safe_free(node);  /* Free the current node after its children are freed */
 }

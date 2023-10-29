@@ -29,7 +29,7 @@ struct HuffmanNode {
   /* The right child of the node */
   struct HuffmanNode* right;
   /* The next node in the Huffman tree (used for building the tree) */
-  struct HuffmanNode *next;
+  struct HuffmanNode* next;
 };
 
 /* Represents a priority queue (min-heap) of Huffman nodes for building a
@@ -50,14 +50,15 @@ struct HuffmanCode {
   size_t code_capacity;
 };
 
-HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left, HuffmanNode* right, HuffmanNode* next);
+HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
+    HuffmanNode* right, HuffmanNode* next);
 PriorityQueue* createPriorityQueue(unsigned int capacity);
 void swapNodes(PriorityQueue* pq, int i, int j);
 void minHeapify(struct PriorityQueue* pq, int idx);
 void insertNode(PriorityQueue* pq, HuffmanNode* node);
-HuffmanNode *buildTree(int list[MAX_CODE_LENGTH]);
-int printHuffmanCodes(HuffmanNode *root, char *code, int top, unsigned char c);
-void cleanUp(HuffmanNode* root);
+HuffmanNode* buildTree(int list[MAX_CODE_LENGTH]);
+int printHuffmanCodes(HuffmanNode* root, char* code, int top, unsigned char c);
+void freeHuffmanTree(HuffmanNode* root);
 HuffmanNode* extractMin(PriorityQueue* pq);
 HuffmanNode* buildHuffmanTree(int* frequencies, int size);
 void freeHuffmanTree(HuffmanNode* node);
