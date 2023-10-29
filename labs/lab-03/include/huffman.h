@@ -3,8 +3,8 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 
-#define MAX_CODE_LENGTH        256 /* total number of characters in ASCII */
-#define ARGUEMENTS_AMOUNT               2   /* number of arguments for the program */
+#define MAX_CODE_LENGTH   256 /* total number of characters in ASCII */
+#define ARGUEMENTS_AMOUNT 2   /* number of arguments for the program */
 
 typedef struct HuffmanNode HuffmanNode;
 typedef struct FileContent FileContent;
