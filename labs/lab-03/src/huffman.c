@@ -1,10 +1,12 @@
+#include "huffman.h"
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include "safe_mem.h"
-#include "huffman.h"
 
 /**
  * Creates a Huffman node
@@ -54,19 +56,21 @@ void swapNodes(PriorityQueue* pq, int i, int j) {
 
 /**
  * Maintains the min-heap property of the PriorityQueue
-  *
-  * @param pq - a pointer to the PriorityQueue
-  * @param idx - the index of the node to heapify
+ *
+ * @param pq - a pointer to the PriorityQueue
+ * @param idx - the index of the node to heapify
  */
 void minHeapify(struct PriorityQueue* pq, int idx) {
   int smallest = idx;
   int left = 2 * idx + 1;
   int right = 2 * idx + 2;
 
-  if (left < pq->size && pq->front[left]->char_freq < pq->front[smallest]->char_freq)
+  if (left < pq->size &&
+      pq->front[left]->char_freq < pq->front[smallest]->char_freq)
     smallest = left;
 
-  if (right < pq->size && pq->front[right]->char_freq < pq->front[smallest]->char_freq)
+  if (right < pq->size &&
+      pq->front[right]->char_freq < pq->front[smallest]->char_freq)
     smallest = right;
 
   if (smallest != idx) {
@@ -77,9 +81,9 @@ void minHeapify(struct PriorityQueue* pq, int idx) {
 
 /**
  * Insert a HuffmanNode into the PriorityQueue
-  *
-  * @param pq - a pointer to the PriorityQueue
-  * @param node - a pointer to the HuffmanNode to insert
+ *
+ * @param pq - a pointer to the PriorityQueue
+ * @param node - a pointer to the HuffmanNode to insert
  */
 void insertNode(PriorityQueue* pq, HuffmanNode* node) {
   int i = pq->size;
@@ -94,9 +98,9 @@ void insertNode(PriorityQueue* pq, HuffmanNode* node) {
 
 /**
  * Extracts the minimum HuffmanNode from the PriorityQueue
-  *
-  * @param pq - a pointer to the PriorityQueue
-  * @return a pointer to the minimum HuffmanNode
+ *
+ * @param pq - a pointer to the PriorityQueue
+ * @return a pointer to the minimum HuffmanNode
  */
 HuffmanNode* extractMin(PriorityQueue* pq) {
   HuffmanNode* temp;
@@ -133,16 +137,17 @@ HuffmanNode* buildHuffmanTree(int* frequencies, int size) {
   while (pq->size > 1) {
     HuffmanNode* left = extractMin(pq);
     HuffmanNode* right = extractMin(pq);
-    HuffmanNode* combined = createNode(0, left->char_freq + right->char_freq, NULL, NULL);
+    HuffmanNode* combined =
+        createNode(0, left->char_freq + right->char_freq, NULL, NULL);
     combined->left = left;
     combined->right = right;
     insertNode(pq, combined);
   }
 
   root = extractMin(pq);
-    free(pq->front);
-    free(pq);
-    return root;
+  free(pq->front);
+  free(pq);
+  return root;
 }
 
 /**
@@ -156,7 +161,7 @@ void freeHuffmanTree(HuffmanNode* node) {
   }
   freeHuffmanTree(node->left);
   freeHuffmanTree(node->right);
-  safe_free(node); // Free the current node after its children are freed
+  safe_free(node);  // Free the current node after its children are freed
 }
 
 /**
@@ -174,8 +179,7 @@ int* countFrequencies(FILE* file) {
   return char_freq;
 }
 
-void buildCodesHelper(
-    HuffmanNode* node, char** huffman_codes, char* code_str) {
+void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str) {
   if (node == NULL) {
     return;
   }
