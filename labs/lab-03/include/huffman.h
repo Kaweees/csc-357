@@ -35,8 +35,8 @@ struct HuffmanNode {
   HuffmanNode* right;
 };
 
-/* Represents a priority queue (via a Min-max-heap) of Huffman nodes used for building a
- * Huffman tree */
+/* Represents a priority queue (via a Min-max-heap) of Huffman nodes used for
+ * building a Huffman tree */
 struct PriorityQueue {
   /* The number of nodes currently in the priority queue */
   unsigned int size;
@@ -76,7 +76,6 @@ void buildMinHeap(PriorityQueue* pq);
 int isLeaf(HuffmanNode* node);
 PriorityQueue* createPriorityQueueFromFreqArray(FrequencyList* freq_list);
 HuffmanNode* buildHuffmanTree(FrequencyList* freq_list);
-
 
 void freeFrequencyList(FrequencyList* freq_list);
 void freeHuffmanTree(HuffmanNode* node);
