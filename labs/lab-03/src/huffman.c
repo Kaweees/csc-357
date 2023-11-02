@@ -67,7 +67,7 @@ PriorityQueue* createPriorityQueue(unsigned int capacity) {
 /**
  * Swaps the pointers of two HuffmanNodes in a PriorityQueue
  *
- * @param a - a pointer to a pointer to the first HuffmanNode 
+ * @param a - a pointer to a pointer to the first HuffmanNode
  * @param b - a pointer to a pointer to the second HuffmanNode
  */
 void swapNodes(HuffmanNode** a, HuffmanNode** b) {
