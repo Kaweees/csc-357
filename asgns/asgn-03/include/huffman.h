@@ -3,28 +3,77 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 
+#define MAX_CODE_LENGTH   256 /* total number of characters in ASCII */
+#define ARGUEMENTS_AMOUNT 2   /* number of arguments for the program */
+
+typedef struct FileContent FileContent;
+typedef struct FrequencyList FrequencyList;
+typedef struct HuffmanNode HuffmanNode;
+typedef struct LinkedList LinkedList;
+typedef struct HuffmanCode HuffmanCode;
+
+/* Represents the contents of a file */
+struct FileContent {
+  /* The length of the file contents in bytes */
+  size_t file_size;
+  /* The pointer to the file contents */
+  char* file_contents;
+};
+
+/* Represents a list of character frequencies */
+struct FrequencyList {
+  /* The array of frequencies for each ASCII character */
+  unsigned char* frequencies;
+  /* The number of non-zero frequencies in the list */
+  unsigned int num_non_zero_freq;
+  /* The size of the list */
+  unsigned int size;
+};
+
+/* Represents a node in a Huffman tree */
 struct HuffmanNode {
-  char char_asci;
+  /* The ASCII character code value */
+  char char_ascii;
+  /* The frequency of the character associated with the node */
   int char_freq;
-  struct HuffmanNode* left;
-  struct HuffmanNode* right;
+  /* The left child of the node */
+  HuffmanNode* left;
+  /* The right child of the node */
+  HuffmanNode* right;
+  /* The next node in the linked list */
+  HuffmanNode* next;
 };
 
 struct LinkedList {
-  struct HuffmanNode* head;
+  /* The head of the linked list */
+  HuffmanNode* head;
+  /* The size of the linked list */
+  int size;
 };
 
-void initLinkedList(struct LinkedList* list);
-void append(struct LinkedList* list, int data);
-void printLinkedList(const struct LinkedList* list);
-void freeLinkedList(struct LinkedList* list);
+/* Represents a Huffman code for a character */
+struct HuffmanCode {
+  /* The Huffman code */
+  char* code_contents;
+  /* The length of the Huffman code */
+  size_t code_length;
+  /* The capacity the Huffman code can hold */
+  size_t code_capacity;
+};
 
-int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b);
-HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b);
-int* countFrequencies(FILE* fp);
-HuffmanNode* buildHuffmanTree(int* frequencies);
-char** buildCodes(struct HuffmanNode* root);
-char* createHeader(char* codes, char* text);
+FrequencyList* countFrequencies(FILE* file);
+HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
+    HuffmanNode* right, HuffmanNode* next);
+int comesBefore(HuffmanNode* a, HuffmanNode* b);
+LinkedList* createLinkedList();
+void insertNode(LinkedList* lls, HuffmanNode* node);
+HuffmanNode* removeFirst(LinkedList* lls);
+HuffmanNode* combine(HuffmanNode* a, HuffmanNode* b);
+HuffmanNode* buildHuffmanTree(FrequencyList* frequencies);
+void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str);
+char** buildCodes(HuffmanNode* node);
+void freeFrequencyList(FrequencyList* freq_list);
+void freeHuffmanTree(HuffmanNode* node);
+void freeHuffmanCodes(char** huffman_codes);
 
-HuffmanNode* pop(struct LinkedList* list);
 #endif
