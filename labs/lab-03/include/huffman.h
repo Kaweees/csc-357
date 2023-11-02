@@ -82,4 +82,5 @@ void freeHuffmanTree(HuffmanNode* node);
 void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str);
 char** buildCodes(HuffmanNode* node);
 void freeHuffmanCodes(char** huffman_codes);
+void freePriorityQueue(PriorityQueue* pq);
 #endif

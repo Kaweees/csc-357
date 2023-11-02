@@ -23,7 +23,7 @@ void htable(FILE* file) {
     }
   }
   freeFrequencyList(char_freq);
-  freeHuffmanTree(root); /* Free the Huffman tree */
+  freeHuffmanTree(root);           /* Free the Huffman tree */
   freeHuffmanCodes(huffman_codes); /* Free the Huffman codes */
 }
 
