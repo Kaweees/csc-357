@@ -11,7 +11,7 @@
  * Reads a file and returns its contents as a singular string
  * @param file - a pointer to the file to read from
  * @return a pointer to the string containing the file's contents
-  */
+ */
 void htable(FILE* file) {
   FrequencyList* char_freq = countFrequencies(file);
   HuffmanNode* root = buildHuffmanTree(char_freq);

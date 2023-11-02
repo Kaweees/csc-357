@@ -51,7 +51,6 @@ struct LinkedList {
   int size;
 };
 
-
 /* Represents a Huffman code for a character */
 struct HuffmanCode {
   /* The Huffman code */
@@ -63,7 +62,8 @@ struct HuffmanCode {
 };
 
 FrequencyList* countFrequencies(FILE* file);
-HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left, HuffmanNode* right, HuffmanNode* next);
+HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
+    HuffmanNode* right, HuffmanNode* next);
 int comesBefore(HuffmanNode* a, HuffmanNode* b);
 LinkedList* createLinkedList();
 void insertNode(LinkedList* lls, HuffmanNode* node);

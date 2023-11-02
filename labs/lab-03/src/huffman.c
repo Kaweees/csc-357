@@ -39,8 +39,8 @@ FrequencyList* countFrequencies(FILE* file) {
  * @param right - the right child of the node
  * @return a pointer to the node
  */
-HuffmanNode* createNode(
-    char ascii, int freq, HuffmanNode* left, HuffmanNode* right, HuffmanNode* next) {
+HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
+    HuffmanNode* right, HuffmanNode* next) {
   HuffmanNode* newNode = (HuffmanNode*)safe_malloc(sizeof(HuffmanNode));
   newNode->char_ascii = ascii;
   newNode->char_freq = freq;
@@ -125,22 +125,26 @@ HuffmanNode* removeFirst(LinkedList* lls) {
  * @return the root of the new tree
  */
 HuffmanNode* combine(HuffmanNode* a, HuffmanNode* b) {
-  /* Put the node with the smaller frequency on the left, and set the frequency of the new node to the sum of the children. */
+  /* Put the node with the smaller frequency on the left, and set the frequency
+   * of the new node to the sum of the children. */
   a->next = b->next = NULL;
-  return createNode(0, a->char_freq + b->char_freq, comesBefore(a, b) ? a : b, comesBefore(a, b) ? b : a, NULL);
+  return createNode(0, a->char_freq + b->char_freq, comesBefore(a, b) ? a : b,
+      comesBefore(a, b) ? b : a, NULL);
 }
 
 /**
  * Creates a Huffman tree from an array of character frequencies
  *
- * @param frequencies - an array of character frequencies in ascending asci order
+ * @param frequencies - an array of character frequencies in ascending asci
+ * order
  * @return the root of the Huffman tree
  */
 HuffmanNode* buildHuffmanTree(FrequencyList* frequencies) {
   LinkedList* lls = createLinkedList();
   for (int i = 0; i < frequencies->size; i++) {
     if (frequencies->frequencies[i] > 0) {
-      HuffmanNode* node = createNode(i, frequencies->frequencies[i], NULL, NULL, NULL);
+      HuffmanNode* node =
+          createNode(i, frequencies->frequencies[i], NULL, NULL, NULL);
       insertNode(lls, node);
     }
   }
