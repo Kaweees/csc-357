@@ -13,17 +13,17 @@
  * @return a pointer to the string containing the file's contents
 //  */
 void htable(FILE* file) {
-  int* char_freq = countFrequencies(file);
-  HuffmanNode* root = buildHuffmanTree(char_freq, MAX_CODE_LENGTH);
+  FrequencyList* char_freq = countFrequencies(file);
+  HuffmanNode* root = buildHuffmanTree(char_freq);
   char** huffman_codes = buildCodes(root);
   int i;
   for (i = 0; i < MAX_CODE_LENGTH; i++) {
-    if (char_freq[i] > 0) {
+    if (char_freq->frequencies[i] > 0) {
       printf("0x%02x: %s\n", i, huffman_codes[i]);
     }
   }
-  safe_free(char_freq);
-  freeHuffmanTree(root);           /* Free the Huffman tree */
+  freeFrequencyList(char_freq);
+  freeHuffmanTree(root); /* Free the Huffman tree */
   freeHuffmanCodes(huffman_codes); /* Free the Huffman codes */
 }
 

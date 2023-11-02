@@ -4,8 +4,29 @@
 #include <stdlib.h>
 
 #include "safe_mem.h"
-
+#include <string.h>
 #define MAX_TREE_HT 100
+
+/**
+ * Opens a file and counts the frequency of each character in the file
+ *
+ * @param file - a pointer to the file to count the frequencies of
+ * @return an array of character frequencies in ascending asci order
+ */
+FrequencyList* countFrequencies(FILE* file) {
+  int c;
+  FrequencyList* char_freq = (FrequencyList*)safe_malloc(sizeof(FrequencyList));
+  char_freq->num_non_zero_freq = 0;
+  char_freq->size = MAX_CODE_LENGTH;
+  char_freq->frequencies = (unsigned char*)safe_calloc(MAX_CODE_LENGTH, sizeof(unsigned char));
+  while ((c = fgetc(file)) != EOF) {
+    if (char_freq->frequencies[c] == 0) {
+      ++char_freq->num_non_zero_freq;
+    }
+    char_freq->frequencies[c]++;
+  }
+  return char_freq;
+}
 
 /**
  * Creates a Huffman node
@@ -33,14 +54,14 @@ HuffmanNode* createNode(
  * @return a pointer to the queue
  */
 PriorityQueue* createPriorityQueue(unsigned int capacity) {
-  PriorityQueue* minHeap = (PriorityQueue*)malloc(sizeof(PriorityQueue));
+  PriorityQueue* minHeap = (PriorityQueue*)safe_malloc(sizeof(PriorityQueue));
   // current size is 0
   minHeap->size = 0;
 
   minHeap->capacity = capacity;
 
   minHeap->front =
-      (HuffmanNode**)malloc(minHeap->capacity * sizeof(HuffmanNode*));
+      (HuffmanNode**)safe_malloc(minHeap->capacity * sizeof(HuffmanNode*));
   return minHeap;
 }
 
@@ -153,18 +174,15 @@ int isLeaf(HuffmanNode* root) { return !(root->left) && !(root->right); }
   @param freq_list - a pointer to a FrequencyList
   @return a pointer to the PriorityQueue
  */
-PriorityQueue* createPriorityQueueFromFreqArray(
-    char data[], int freq[], int size)
-
-{
-  PriorityQueue* minHeap = createPriorityQueue(size);
-
-  for (int i = 0; i < size; ++i)
-    minHeap->front[i] = createNode(data[i], freq[i], NULL, NULL);
-
-  minHeap->size = size;
+PriorityQueue* createPriorityQueueFromFreqArray(FrequencyList* freq_list) {
+  PriorityQueue* minHeap = createPriorityQueue(freq_list->size);
+  for (int i = 0; i < freq_list->size; i++) {
+    if (freq_list->frequencies[i] > 0) {
+      // printf("0x%02x: %d\n", i, freq_list->frequencies[i]);
+      minHeap->front[minHeap->size++] = createNode(i, freq_list->frequencies[i], NULL, NULL);
+    }
+  }
   buildMinHeap(minHeap);
-
   return minHeap;
 }
 
@@ -174,24 +192,94 @@ PriorityQueue* createPriorityQueueFromFreqArray(
  * @param freq_list - a pointer to a FrequencyList
  * @return the root of the Huffman tree
  */
-HuffmanNode* buildHuffmanTree(char data[], int freq[], int size) {
-  HuffmanNode *left, *right, *top;
+HuffmanNode* buildHuffmanTree(FrequencyList* freq_list) {
+  HuffmanNode *left, *right, *top, *root;
   /* Create a min heap priority queue from the frequencies array */
-  PriorityQueue* minHeap = createPriorityQueueFromFreqArray(data, freq, size);
-
+  PriorityQueue* minHeap = createPriorityQueueFromFreqArray(freq_list);
   /* Iterate until there is only one node left in the priority queue */
   while (!(minHeap->size == 1)) {
-    /* Extract the two least frequently appearing nodes from the priority queue
-     */
+    /* Extract the two least frequently appearing nodes from the priority queue */
     left = extractMin(minHeap);
     right = extractMin(minHeap);
-
     /* Superimpose the two nodes into a single node */
     top = createNode('$', left->char_freq + right->char_freq, left, right);
-
     insertMinHeap(minHeap, top);
   }
-
   /* Return the root of the Huffman tree */
-  return extractMin(minHeap);
+  root = extractMin(minHeap);
+  /* Free the priority queue */
+  freePriorityQueue(minHeap);
+  return root;
+}
+
+/**
+ * Frees the memory allocated for a FrequencyList
+ *
+ * @param node - a pointer to the root of the Huffman tree
+ */
+void freeFrequencyList(FrequencyList* freq_list) {
+  if (freq_list == NULL) {
+    return;
+  }
+  safe_free(freq_list->frequencies);
+  safe_free(freq_list);
+}
+
+/**
+ * Frees the Huffman tree nodes and associated memory
+ *
+ * @param node - a pointer to the root of the Huffman tree
+ */
+void freeHuffmanTree(HuffmanNode* node) {
+  if (node == NULL) {
+    return;
+  }
+  freeHuffmanTree(node->left);
+  freeHuffmanTree(node->right);
+  safe_free(node);  // Free the current node after its children are freed
+}
+
+void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str) {
+  if (node == NULL) {
+    return;
+  }
+  if (node->left == NULL && node->right == NULL) {
+    huffman_codes[(int)node->char_ascii] = strdup(code_str);
+  } else {
+    char left_code[strlen(code_str) + 2];
+    char right_code[strlen(code_str) + 2];
+    sprintf(left_code, "%s0", code_str);
+    sprintf(right_code, "%s1", code_str);
+    buildCodesHelper(node->left, huffman_codes, left_code);
+    buildCodesHelper(node->right, huffman_codes, right_code);
+  }
+}
+
+char** buildCodes(HuffmanNode* node) {
+  char** huffman_codes = (char**)calloc(MAX_CODE_LENGTH, sizeof(char*));
+  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+    huffman_codes[i] = NULL;
+  }
+  buildCodesHelper(node, huffman_codes, "");
+  return huffman_codes;
+}
+
+/**
+ * Frees the memory allocated for Huffman codes
+ *
+ * @param huffman_codes - an array of Huffman codes
+ */
+void freeHuffmanCodes(char** huffman_codes) {
+  int i;
+  for (i = 0; i < MAX_CODE_LENGTH; i++) {
+    if (huffman_codes[i] != NULL) {
+      safe_free(huffman_codes[i]);
+    }
+  }
+  safe_free(huffman_codes);
+}
+
+void freePriorityQueue(PriorityQueue* pq) {
+  safe_free(pq->front);
+  safe_free(pq);
 }

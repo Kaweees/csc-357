@@ -88,7 +88,6 @@ test: $(BINS)
 	$(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS) $(TEST_INPUT)
 	@echo "Comparing output to $(REF_EXE):"
 	diff <($(BINS) $(TEST_INPUT)) <($(REF_EXE) $(TEST_INPUT))
-# $(BINS) hdecode output.txt decoded.txt	
 
 # Clean target: remove build artifacts and non-essential files
 clean:
@@ -99,6 +98,6 @@ debug: $(BINS)
 	@mkdir -p $(OBJ_DIR) # Create the object directory if it doesn't exist
 	$(CC) $(CFLAGS) -g $(INCS) -c $< -o $@
 	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
-	$(LD) $(LDFLAGS) $(OBJS) -o $(BINS)
+	$(LD) $(LDFLAGS) -g $(OBJS) -o $(BINS)
 	@echo "Debugging $(TARGET)..."
-	$(DEBUGGER) $(BINS)
+	$(DEBUGGER) $(DEBUGGER_FLAGS) $(BINS)
