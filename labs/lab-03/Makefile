@@ -85,6 +85,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 test: $(BINS)
 	@echo "Testing $(TARGET)..."
 	@echo "Testing memory leaks..."
+	$(BINS) $(TEST_INPUT)
 	$(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS) $(TEST_INPUT)
 	@echo "Comparing output to $(REF_EXE):"
 	diff <($(BINS) $(TEST_INPUT)) <($(REF_EXE) $(TEST_INPUT))
