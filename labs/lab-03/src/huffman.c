@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "safe_mem.h"
-#define MAX_TREE_HT 100
 
 /**
  * Opens a file and counts the frequency of each character in the file
@@ -56,21 +55,20 @@ HuffmanNode* createNode(
  */
 PriorityQueue* createPriorityQueue(unsigned int capacity) {
   PriorityQueue* pq = (PriorityQueue*)safe_malloc(sizeof(PriorityQueue));
-  // current size is 0
+  /* Initialize the size of the queue to 0 */
   pq->size = 0;
-
+  /* Initialize the capacity of the queue */
   pq->capacity = capacity;
-
-  pq->front =
-      (HuffmanNode**)safe_malloc(pq->capacity * sizeof(HuffmanNode*));
+  /* Allocate memory for the array of HuffmanNode pointers */
+  pq->front = (HuffmanNode**)safe_malloc(pq->capacity * sizeof(HuffmanNode*));
   return pq;
 }
 
 /**
- * Creates a Priority Queue (implemented as a Min-max-heap) of a given capacity
+ * Swaps the pointers of two HuffmanNodes in a PriorityQueue
  *
- * @param capacity - the capacity of the queue
- * @return a pointer to the queue
+ * @param a - a pointer to a pointer to the first HuffmanNode 
+ * @param b - a pointer to a pointer to the second HuffmanNode
  */
 void swapNodes(HuffmanNode** a, HuffmanNode** b) {
   HuffmanNode* temp = *a;
@@ -153,14 +151,6 @@ void buildMinHeap(PriorityQueue* pq) {
   for (i = (n - 1) / 2; i >= 0; --i) minHeapify(pq, i);
 }
 
-// A utility function to print an array of size n
-void printArr(int arr[], int n) {
-  int i;
-  for (i = 0; i < n; ++i) printf("%d", arr[i]);
-
-  printf("\n");
-}
-
 /**
  * Check if a HuffmanNode is a leaf (it has no children)
  *
@@ -179,7 +169,6 @@ PriorityQueue* createPriorityQueueFromFreqArray(FrequencyList* freq_list) {
   PriorityQueue* pq = createPriorityQueue(freq_list->size);
   for (int i = 0; i < freq_list->size; i++) {
     if (freq_list->frequencies[i] > 0) {
-      // printf("0x%02x: %d\n", i, freq_list->frequencies[i]);
       pq->front[pq->size++] =
           createNode(i, freq_list->frequencies[i], NULL, NULL);
     }
@@ -239,7 +228,7 @@ void freeHuffmanTree(HuffmanNode* node) {
   }
   freeHuffmanTree(node->left);
   freeHuffmanTree(node->right);
-  safe_free(node);  // Free the current node after its children are freed
+  safe_free(node); /* Free the node */
 }
 
 void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str) {
