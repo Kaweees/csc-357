@@ -62,6 +62,7 @@ struct HuffmanCode {
 };
 
 FrequencyList* countFrequencies(FILE* file);
+void createHeader(FrequencyList* freq_list, FILE* outfile);
 HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
     HuffmanNode* right, HuffmanNode* next);
 int comesBefore(HuffmanNode* a, HuffmanNode* b);

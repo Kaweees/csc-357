@@ -31,6 +31,29 @@ FrequencyList* countFrequencies(FILE* file) {
 }
 
 /**
+ * Read a frequency list and write it to a file as a header
+ *
+ * @param ascii - the ASCII character
+ * @param freq - the frequency of the character
+ * @param left - the left child of the node
+ * @param right - the right child of the node
+ * @return a pointer to the node
+ */
+void createHeader(FrequencyList* freq_list, FILE* outfile) {
+  char buffer[20];
+  for (int i = 0; i < freq_list->size; i++) {
+    if (freq_list->frequencies[i] > 0) {
+      snprintf(buffer, sizeof(buffer), "%d %d ", i, freq_list->frequencies[i]);
+      // sprintf(buffer,"%d%d%d", sizeof(buffer), i, freq_list->frequencies[i],
+          // '\n');
+      write(fileno(outfile), buffer, strlen(buffer));
+      // write(fileno(outfile), &freq_list->frequencies[i],
+      //     sizeof(unsigned char));
+    }
+  }
+}
+
+/**
  * Creates a Huffman node
  *
  * @param ascii - the ASCII character

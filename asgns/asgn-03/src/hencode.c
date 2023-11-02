@@ -8,38 +8,53 @@
 #include "safe_mem.h"
 
 /**
- * Reads a file and returns its contents as a singular string
- * @param file - a pointer to the file to read from
- * @return a pointer to the string containing the file's contents
+ * @brief Reads a file and compresses it using Huffman coding
+ * 
+ * @param infile - a pointer to the file to read from
+ * @param outfile - a pointer to the file to write to
  */
-void htable(FILE* file) {
-  FrequencyList* char_freq = countFrequencies(file);
-  HuffmanNode* root = buildHuffmanTree(char_freq);
-  char** huffman_codes = buildCodes(root);
-  int i;
-  for (i = 0; i < MAX_CODE_LENGTH; i++) {
-    if (char_freq->frequencies[i] > 0) {
-      printf("0x%02x: %s\n", i, huffman_codes[i]);
-    }
-  }
+void hencode(FILE* infile, FILE* outfile) {
+  FrequencyList* char_freq = countFrequencies(infile);
+  createHeader(char_freq, outfile);
+  // HuffmanNode* root = buildHuffmanTree(char_freq);
+  // char** huffman_codes = buildCodes(root);
+  // int i;
+  // for (i = 0; i < MAX_CODE_LENGTH; i++) {
+  //   if (char_freq->frequencies[i] > 0) {
+  //     write(fileno(outfile), huffman_codes[i], strlen(huffman_codes[i]));
+  //   }
+  // }
   freeFrequencyList(char_freq);
-  freeHuffmanTree(root);           /* Free the Huffman tree */
-  freeHuffmanCodes(huffman_codes); /* Free the Huffman codes */
+  // freeHuffmanTree(root);           /* Free the Huffman tree */
+  // freeHuffmanCodes(huffman_codes); /* Free the Huffman codes */
 }
 
 int main(int argc, char* argv[]) {
-  if (argc == ARGUEMENTS_AMOUNT) {
-    FILE* infile;
+  if (argc == 2) {
+    FILE* infile; FILE* outfile;
     infile = fopen(*(argv + 1), "r");
-    if (infile == NULL) {
+    outfile = stdout;
+    if (infile == NULL || outfile == NULL) {
       perror("Error opening file\n");
       exit(EXIT_FAILURE);
     } else {
-      htable(infile);
+      hencode(infile, outfile);
+      fclose(infile);
+      fclose(outfile);
+    }
+  } else if (argc == 3) {
+    FILE* infile; FILE* outfile;
+    infile = fopen(*(argv + 1), "r");
+    outfile = fopen(*(argv + 1), "r");
+    if (infile == NULL || outfile == NULL) {
+      perror("Error opening file\n");
+      exit(EXIT_FAILURE);
+    } else {
+      hencode(infile, outfile);
       fclose(infile);
     }
   } else {
-    fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <input_file> [ <output_file>\n", argv[0]);
     return EXIT_FAILURE;
   }
   return 0;
