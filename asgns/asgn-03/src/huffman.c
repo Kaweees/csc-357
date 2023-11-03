@@ -14,21 +14,35 @@
  * @param file - a pointer to the file to count the frequencies of
  * @return an array of character frequencies in ascending asci order
  */
-FrequencyList* countFrequencies(FILE* file) {
-  int c;
+FrequencyList* countFrequencies(FileContent* contents) {
   FrequencyList* char_freq = (FrequencyList*)safe_malloc(sizeof(FrequencyList));
   char_freq->num_non_zero_freq = 0;
   char_freq->size = MAX_CODE_LENGTH;
   char_freq->frequencies =
       (unsigned char*)safe_calloc(MAX_CODE_LENGTH, sizeof(unsigned char));
-  while ((c = fgetc(file)) != EOF) {
-    if (char_freq->frequencies[c] == 0) {
+  for (int i = 0; i < contents->file_size; i++) {
+    if (char_freq->frequencies[(int) contents->file_contents[i]] == 0) {
       ++char_freq->num_non_zero_freq;
     }
-    char_freq->frequencies[c]++;
+    char_freq->frequencies[(int) contents->file_contents[i]]++;
   }
   return char_freq;
 }
+
+// /**
+//  * Count the frequency of each character in the file
+// void createHeader(FrequencyList* freq_list, FILE* outfile) {
+//   char buffer[20];
+//   for (int i = 0; i < freq_list->size; i++) {
+//     if (freq_list->frequencies[i] > 0) {
+//       snprintf(buffer, sizeof(buffer), "%d %d ", i, freq_list->frequencies[i]);
+//       // sprintf(buffer,"%d%d%d", sizeof(buffer), i, freq_list->frequencies[i],
+//           // '\n');
+//       write(fileno(outfile), buffer, strlen(buffer));
+//       // write(fileno(outfile), &freq_list->frequencies[i],
+//       //     sizeof(unsigned char));
+//     }
+//   }
 
 /**
  * Read a frequency list and write it to a file as a header
@@ -39,18 +53,18 @@ FrequencyList* countFrequencies(FILE* file) {
  * @param right - the right child of the node
  * @return a pointer to the node
  */
-void createHeader(FrequencyList* freq_list, FILE* outfile) {
-  char buffer[20];
-  for (int i = 0; i < freq_list->size; i++) {
-    if (freq_list->frequencies[i] > 0) {
-      snprintf(buffer, sizeof(buffer), "%d %d ", i, freq_list->frequencies[i]);
-      // sprintf(buffer,"%d%d%d", sizeof(buffer), i, freq_list->frequencies[i],
-          // '\n');
-      write(fileno(outfile), buffer, strlen(buffer));
-      // write(fileno(outfile), &freq_list->frequencies[i],
-      //     sizeof(unsigned char));
-    }
-  }
+void createHeader(FrequencyList* freq_list, int outfile) {
+  // char buffer[20];
+  // for (int i = 0; i < freq_list->size; i++) {
+  //   if (freq_list->frequencies[i] > 0) {
+  //     snprintf(buffer, sizeof(buffer), "%d %d ", i, freq_list->frequencies[i]);
+  //     // sprintf(buffer,"%d%d%d", sizeof(buffer), i, freq_list->frequencies[i],
+  //         // '\n');
+  //     write(fileno(outfile), buffer, strlen(buffer));
+  //     // write(fileno(outfile), &freq_list->frequencies[i],
+  //     //     sizeof(unsigned char));
+  //   }
+  // }
 }
 
 /**

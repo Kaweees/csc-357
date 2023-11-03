@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+#include "safe_file.h"
+
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 
@@ -52,7 +54,7 @@ struct HuffmanCode {
   size_t code_capacity;
 };
 
-FrequencyList* countFrequencies(int fd);
+FrequencyList* countFrequencies(FileContent* contents);
 void createHeader(FrequencyList* freq_list, int outfile);
 HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
     HuffmanNode* right, HuffmanNode* next);
