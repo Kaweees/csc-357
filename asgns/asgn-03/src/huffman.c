@@ -1,3 +1,5 @@
+#include "huffman.h"
+
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -8,9 +10,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-
 #include "safe_file.h"
-#include "huffman.h"
 #include "safe_mem.h"
 
 /**
@@ -95,7 +95,8 @@ HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
  * @return 1 if a should come before b, 0 otherwise
  */
 int comesBefore(HuffmanNode* a, HuffmanNode* b) {
-  return a->char_freq < b->char_freq || (a->char_freq == b->char_freq && a->char_ascii < b->char_ascii);
+  return a->char_freq < b->char_freq ||
+         (a->char_freq == b->char_freq && a->char_ascii < b->char_ascii);
 }
 
 /**
@@ -216,7 +217,6 @@ HuffmanNode* buildHuffmanTree(FrequencyList* frequencies) {
   head = head->next;
   free(oldHead);
   return head;
-
 }
 
 void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str) {

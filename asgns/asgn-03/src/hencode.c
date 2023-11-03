@@ -31,7 +31,7 @@ void hencode(int infile, int outfile) {
       printf("%c: %s\n", i, huffman_codes[i]);
     }
   }
-  printf("size: %d\n", (int) file_contents->file_size);
+  printf("size: %d\n", (int)file_contents->file_size);
   int count = 0;
   uint32_t frequencyNetworkByte = 0;
   char* correspondingCode = NULL;

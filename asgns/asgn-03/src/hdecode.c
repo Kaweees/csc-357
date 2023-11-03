@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
     int infile = safe_open(*(argv + 1), O_RDONLY, S_IRWXU);
     int outfile =
         safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
-        hdecode(infile, outfile);
+    hdecode(infile, outfile);
     close(infile);
     close(outfile);
   } else {
