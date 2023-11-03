@@ -26,18 +26,23 @@ void hencode(int infile, int outfile) {
   createHeader(char_freq, outfile);
   HuffmanNode* root = buildHuffmanTree(char_freq);
   char** huffman_codes = buildCodes(root);
+  for (int i = 0; i < char_freq->size; i++) {
+    if (char_freq->frequencies[i] > 0) {
+      printf("%c: %s\n", i, huffman_codes[i]);
+    }
+  }
+  printf("size: %d\n", (int) file_contents->file_size);
   int count = 0;
   uint32_t frequencyNetworkByte = 0;
   char* correspondingCode = NULL;
   for (int i = 0; i < file_contents->file_size; i++) {
     correspondingCode = huffman_codes[(int)file_contents->file_contents[i]];
     for (int j = 0; j < strlen(correspondingCode); j++) {
-      printf("%c: %d\n", correspondingCode[j], count);
       if (count == SPECIAL_INT_SIZE) {
         /* Change the byte order to network byte order (big endian) */
         frequencyNetworkByte = htonl(frequencyNetworkByte);
         /* Write the byte to the file if the byte is full */
-        safe_file_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
+        safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
         frequencyNetworkByte = 0;
         count = 0;
       }
@@ -50,7 +55,7 @@ void hencode(int infile, int outfile) {
     /* Change the byte order to network byte order (big endian) */
     frequencyNetworkByte = htonl(frequencyNetworkByte);
     /* Write the byte to the file if the byte is full */
-    safe_file_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
+    safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
   }
   freeFileContent(file_contents);
   freeFrequencyList(char_freq);

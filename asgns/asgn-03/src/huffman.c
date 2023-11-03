@@ -1,14 +1,16 @@
-#include "huffman.h"
-
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <unistd.h>
 
+
 #include "safe_file.h"
+#include "huffman.h"
 #include "safe_mem.h"
 
 /**
@@ -108,6 +110,16 @@ LinkedList* createLinkedList() {
   return lls;
 }
 
+void insert(HuffmanNode* head, HuffmanNode* node) {
+  HuffmanNode* firstNode;
+  firstNode = head;
+  while ((firstNode->next != NULL) && comesBefore(firstNode->next, node)) {
+    firstNode = firstNode->next;
+  }
+  node->next = firstNode->next;
+  firstNode->next = node;
+}
+
 /**
  * Inserts a HuffmanNode into a LinkedList at its correct position
  *
@@ -117,8 +129,6 @@ LinkedList* createLinkedList() {
 void insertNode(LinkedList* lls, HuffmanNode* node) {
   if (lls->size == 0) {
     lls->head = node;
-    lls->size++;
-    return;
   } else {
     /* Set curr to the node before the insertion point */
     HuffmanNode* curr = lls->head;
@@ -127,8 +137,8 @@ void insertNode(LinkedList* lls, HuffmanNode* node) {
     }
     node->next = curr->next;
     curr->next = node;
-    lls->size++;
   }
+  lls->size++;
 }
 
 /**
@@ -144,6 +154,7 @@ HuffmanNode* removeFirst(LinkedList* lls) {
     HuffmanNode* temp = lls->head;
     lls->head = lls->head->next;
     lls->size--;
+    temp->next = NULL;
     return temp;
   }
 }
@@ -170,23 +181,42 @@ HuffmanNode* combine(HuffmanNode* a, HuffmanNode* b) {
  * @return the root of the Huffman tree
  */
 HuffmanNode* buildHuffmanTree(FrequencyList* frequencies) {
-  LinkedList* lls = createLinkedList();
-  for (int i = 0; i < frequencies->size; i++) {
+  HuffmanNode* head;
+  int i;
+
+  head = createNode(0, 0, NULL, NULL, NULL);
+  for (i = 0; i < MAX_CODE_LENGTH; i++) {
+    HuffmanNode* newNode;
     if (frequencies->frequencies[i] > 0) {
-      HuffmanNode* node =
-          createNode(i, frequencies->frequencies[i], NULL, NULL, NULL);
-      insertNode(lls, node);
+      newNode = createNode(i, frequencies->frequencies[i], NULL, NULL, NULL);
+      insert(head, newNode);
     }
   }
-  while (lls->size > 1) {
-    HuffmanNode* left = removeFirst(lls);
-    HuffmanNode* right = removeFirst(lls);
-    HuffmanNode* combined = combine(left, right);
-    insertNode(lls, combined);
+
+  HuffmanNode* leftNode;
+  HuffmanNode* rightNode;
+
+  /* creates new node with updated freq */
+  while (head->next->next != NULL) {
+    leftNode = head->next;
+    rightNode = head->next->next;
+    /* create the new node */
+    HuffmanNode* newNode = createNode(
+        0, leftNode->char_freq + rightNode->char_freq, NULL, NULL, NULL);
+    head->next = head->next->next->next;
+    leftNode->next = NULL;
+    rightNode->next = NULL;
+    newNode->left = leftNode;
+    newNode->right = rightNode;
+    insert(head, newNode);
   }
-  HuffmanNode* root = removeFirst(lls);
-  safe_free(lls);
-  return root;
+  /* move the new node with the updated freq to the front */
+  HuffmanNode* oldHead;
+  oldHead = head;
+  head = head->next;
+  free(oldHead);
+  return head;
+
 }
 
 void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str) {

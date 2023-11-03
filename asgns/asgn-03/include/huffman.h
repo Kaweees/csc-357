@@ -26,7 +26,7 @@ struct FrequencyList {
 /* Represents a node in a Huffman tree */
 struct HuffmanNode {
   /* The ASCII character code value */
-  char char_ascii;
+  unsigned char char_ascii;
   /* The frequency of the character associated with the node */
   int char_freq;
   /* The left child of the node */
@@ -54,6 +54,7 @@ struct HuffmanCode {
   size_t code_capacity;
 };
 
+FrequencyList* createFrequencyList(size_t size);
 FrequencyList* countFrequencies(FileContent* contents);
 void createHeader(FrequencyList* freq_list, int outfile);
 HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
