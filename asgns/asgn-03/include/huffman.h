@@ -6,19 +6,10 @@
 #define MAX_CODE_LENGTH   256 /* total number of characters in ASCII */
 #define ARGUEMENTS_AMOUNT 2   /* number of arguments for the program */
 
-typedef struct FileContent FileContent;
 typedef struct FrequencyList FrequencyList;
 typedef struct HuffmanNode HuffmanNode;
 typedef struct LinkedList LinkedList;
 typedef struct HuffmanCode HuffmanCode;
-
-/* Represents the contents of a file */
-struct FileContent {
-  /* The length of the file contents in bytes */
-  size_t file_size;
-  /* The pointer to the file contents */
-  char* file_contents;
-};
 
 /* Represents a list of character frequencies */
 struct FrequencyList {
@@ -61,8 +52,8 @@ struct HuffmanCode {
   size_t code_capacity;
 };
 
-FrequencyList* countFrequencies(FILE* file);
-void createHeader(FrequencyList* freq_list, FILE* outfile);
+FrequencyList* countFrequencies(int fd);
+void createHeader(FrequencyList* freq_list, int outfile);
 HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
     HuffmanNode* right, HuffmanNode* next);
 int comesBefore(HuffmanNode* a, HuffmanNode* b);

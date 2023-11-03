@@ -2,6 +2,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h> 
+
+#define FILE_ERROR -1
+#include <sys/stat.h>
+
+struct stat file_info;
 
 /**
  * A safe version of malloc that validates memory allocation and exits on
@@ -34,17 +40,6 @@ void *safe_realloc(void *ptr, size_t size) {
 }
 
 /**
- * A safe version of free that validates memory allocation and exits on failure
- * @param ptr a pointer to the memory to free
- */
-void safe_free(void *ptr) {
-  if (ptr != NULL) {
-    free(ptr);
-    ptr = NULL;
-  }
-}
-
-/**
  * A safe version of calloc that validates memory allocation and exits on
  failure
  * @param nmemb the number of elements to allocate
@@ -58,4 +53,15 @@ void *safe_calloc(size_t nmemb, size_t size) {
     exit(EXIT_FAILURE);
   }
   return ptr;
+}
+
+/**
+ * A safe version of free that validates memory allocation and exits on failure
+ * @param ptr a pointer to the memory to free
+ */
+void safe_free(void *ptr) {
+  if (ptr != NULL) {
+    free(ptr);
+    ptr = NULL;
+  }
 }
