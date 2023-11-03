@@ -5,8 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <arpa/inet.h>
 
 #include "safe_mem.h"
+#include "safe_file.h"
 
 /**
  * Opens a file and counts the frequency of each character in the file
@@ -28,24 +31,6 @@ FrequencyList* countFrequencies(FileContent* contents) {
   }
   return char_freq;
 }
-
-// /**
-//  * Count the frequency of each character in the file
-// void createHeader(FrequencyList* freq_list, FILE* outfile) {
-//   char buffer[20];
-//   for (int i = 0; i < freq_list->size; i++) {
-//     if (freq_list->frequencies[i] > 0) {
-//       snprintf(buffer, sizeof(buffer), "%d %d ", i,
-//       freq_list->frequencies[i]);
-//       // sprintf(buffer,"%d%d%d", sizeof(buffer), i,
-//       freq_list->frequencies[i],
-//           // '\n');
-//       write(fileno(outfile), buffer, strlen(buffer));
-//       // write(fileno(outfile), &freq_list->frequencies[i],
-//       //     sizeof(unsigned char));
-//     }
-//   }
-
 /**
  * Read a frequency list and write it to a file as a header
  *
@@ -56,19 +41,17 @@ FrequencyList* countFrequencies(FileContent* contents) {
  * @return a pointer to the node
  */
 void createHeader(FrequencyList* freq_list, int outfile) {
-  // char buffer[20];
-  // for (int i = 0; i < freq_list->size; i++) {
-  //   if (freq_list->frequencies[i] > 0) {
-  //     snprintf(buffer, sizeof(buffer), "%d %d ", i,
-  //     freq_list->frequencies[i]);
-  //     // sprintf(buffer,"%d%d%d", sizeof(buffer), i,
-  //     freq_list->frequencies[i],
-  //         // '\n');
-  //     write(fileno(outfile), buffer, strlen(buffer));
-  //     // write(fileno(outfile), &freq_list->frequencies[i],
-  //     //     sizeof(unsigned char));
-  //   }
-  // }
+  uint8_t size = freq_list->num_non_zero_freq - 1;
+  safe_write(outfile, &size, sizeof(uint8_t));
+  for (int i = 0; i < freq_list->size; i++) {
+    if (freq_list->frequencies[i] > 0) {
+      uint8_t ascii = i;
+      uint32_t frequency = freq_list->frequencies[i];
+      frequency = htonl(frequency);
+      safe_write(outfile, &ascii, sizeof(uint8_t));
+      safe_write(outfile, &frequency, sizeof(uint32_t));
+    }
+  }
 }
 
 /**

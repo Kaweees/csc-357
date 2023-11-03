@@ -58,7 +58,7 @@ FileContent *safe_read(int fd) {
  * @param mode the mode to open the file in
  * @return a pointer to the successfully opened file
  */
-void safe_file_write(int fd, void *buf, size_t count) {
+void safe_write(int fd, void *buf, size_t count) {
   if (write(fd, buf, count) == FILE_ERROR) {
     perror("Error writing to file");
     exit(EXIT_FAILURE);
