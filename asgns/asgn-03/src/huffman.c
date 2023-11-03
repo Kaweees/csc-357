@@ -1,5 +1,4 @@
 #include "huffman.h"
-#include "safe_mem.h"
 
 #include <stddef.h>
 #include <stdio.h>
@@ -7,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "safe_mem.h"
 
 /**
  * Opens a file and counts the frequency of each character in the file
@@ -21,10 +21,10 @@ FrequencyList* countFrequencies(FileContent* contents) {
   char_freq->frequencies =
       (unsigned char*)safe_calloc(MAX_CODE_LENGTH, sizeof(unsigned char));
   for (int i = 0; i < contents->file_size; i++) {
-    if (char_freq->frequencies[(int) contents->file_contents[i]] == 0) {
+    if (char_freq->frequencies[(int)contents->file_contents[i]] == 0) {
       ++char_freq->num_non_zero_freq;
     }
-    char_freq->frequencies[(int) contents->file_contents[i]]++;
+    char_freq->frequencies[(int)contents->file_contents[i]]++;
   }
   return char_freq;
 }
@@ -35,8 +35,10 @@ FrequencyList* countFrequencies(FileContent* contents) {
 //   char buffer[20];
 //   for (int i = 0; i < freq_list->size; i++) {
 //     if (freq_list->frequencies[i] > 0) {
-//       snprintf(buffer, sizeof(buffer), "%d %d ", i, freq_list->frequencies[i]);
-//       // sprintf(buffer,"%d%d%d", sizeof(buffer), i, freq_list->frequencies[i],
+//       snprintf(buffer, sizeof(buffer), "%d %d ", i,
+//       freq_list->frequencies[i]);
+//       // sprintf(buffer,"%d%d%d", sizeof(buffer), i,
+//       freq_list->frequencies[i],
 //           // '\n');
 //       write(fileno(outfile), buffer, strlen(buffer));
 //       // write(fileno(outfile), &freq_list->frequencies[i],
@@ -57,8 +59,10 @@ void createHeader(FrequencyList* freq_list, int outfile) {
   // char buffer[20];
   // for (int i = 0; i < freq_list->size; i++) {
   //   if (freq_list->frequencies[i] > 0) {
-  //     snprintf(buffer, sizeof(buffer), "%d %d ", i, freq_list->frequencies[i]);
-  //     // sprintf(buffer,"%d%d%d", sizeof(buffer), i, freq_list->frequencies[i],
+  //     snprintf(buffer, sizeof(buffer), "%d %d ", i,
+  //     freq_list->frequencies[i]);
+  //     // sprintf(buffer,"%d%d%d", sizeof(buffer), i,
+  //     freq_list->frequencies[i],
   //         // '\n');
   //     write(fileno(outfile), buffer, strlen(buffer));
   //     // write(fileno(outfile), &freq_list->frequencies[i],

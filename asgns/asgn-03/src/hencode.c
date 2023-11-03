@@ -1,16 +1,14 @@
+#include <fcntl.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <fcntl.h> 
 
 #include "huffman.h"
-#include "safe_mem.h"
 #include "safe_file.h"
+#include "safe_mem.h"
 
 /**
  * @brief Reads a file and compresses it using Huffman coding
@@ -19,7 +17,7 @@
  * @param outfile - a pointer to the file to write to
  */
 void hencode(int infile, int outfile) {
-  FileContent *file = safe_read(infile);
+  FileContent* file = safe_read(infile);
   FrequencyList* char_freq = countFrequencies(file);
   // createHeader(char_freq, outfile);
   HuffmanNode* root = buildHuffmanTree(char_freq);
@@ -49,7 +47,7 @@ int main(int argc, char* argv[]) {
     hencode(infile, outfile);
     close(infile);
   } else if (argc == 3) {
-    int infile = safe_open(*(argv + 1), O_RDONLY); 
+    int infile = safe_open(*(argv + 1), O_RDONLY);
     int outfile = safe_open(*(argv + 1), (O_WRONLY | O_CREAT | O_TRUNC));
     hencode(infile, outfile);
     close(infile);
