@@ -12,17 +12,27 @@
 #include "safe_mem.h"
 
 /**
+ * Creates a FrequencyList
+ *
+ * @return a pointer to the FrequencyList
+ */
+FrequencyList* createFrequencyList(size_t size) {
+  FrequencyList* freq = (FrequencyList*)safe_malloc(sizeof(FrequencyList));
+  freq->num_non_zero_freq = 0;
+  freq->size = size;
+  freq->frequencies =
+      (unsigned char*)safe_calloc(freq->size, sizeof(unsigned char));
+  return freq;
+}
+
+/**
  * Opens a file and counts the frequency of each character in the file
  *
  * @param file - a pointer to the file to count the frequencies of
  * @return an array of character frequencies in ascending asci order
  */
 FrequencyList* countFrequencies(FileContent* contents) {
-  FrequencyList* char_freq = (FrequencyList*)safe_malloc(sizeof(FrequencyList));
-  char_freq->num_non_zero_freq = 0;
-  char_freq->size = MAX_CODE_LENGTH;
-  char_freq->frequencies =
-      (unsigned char*)safe_calloc(MAX_CODE_LENGTH, sizeof(unsigned char));
+  FrequencyList* char_freq = createFrequencyList(MAX_CODE_LENGTH);
   for (int i = 0; i < contents->file_size; i++) {
     if (char_freq->frequencies[(int)contents->file_contents[i]] == 0) {
       ++char_freq->num_non_zero_freq;
@@ -83,11 +93,7 @@ HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
  * @return 1 if a should come before b, 0 otherwise
  */
 int comesBefore(HuffmanNode* a, HuffmanNode* b) {
-  if (a->char_freq == b->char_freq) {
-    return a->char_ascii < b->char_ascii;
-  } else {
-    return a->char_freq < b->char_freq;
-  }
+  return a->char_freq < b->char_freq || (a->char_freq == b->char_freq && a->char_ascii < b->char_ascii);
 }
 
 /**
