@@ -1,3 +1,4 @@
+#include <arpa/inet.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -6,7 +7,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <arpa/inet.h>
+
 #include "huffman.h"
 #include "safe_file.h"
 #include "safe_mem.h"
@@ -27,7 +28,7 @@ void hencode(int infile, int outfile) {
   char** huffman_codes = buildCodes(root);
   int count = 0;
   uint32_t frequencyNetworkByte = 0;
-  char *correspondingCode = NULL;
+  char* correspondingCode = NULL;
   for (int i = 0; i < file_contents->file_size; i++) {
     correspondingCode = huffman_codes[(int)file_contents->file_contents[i]];
     for (int j = 0; j < strlen(correspondingCode); j++) {
