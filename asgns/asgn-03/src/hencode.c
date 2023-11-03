@@ -44,7 +44,8 @@ int main(int argc, char* argv[]) {
     close(infile);
   } else if (argc == 3) {
     int infile = safe_open(*(argv + 1), O_RDONLY, S_IRWXU);
-    int outfile = safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
+    int outfile =
+        safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
     hencode(infile, outfile);
     close(infile);
     close(outfile);
