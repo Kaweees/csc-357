@@ -15,9 +15,9 @@
  * @param mode the mode to open the file in
  * @return a file descriptor to the successfully opened file
  */
-int safe_open(char *filename, int flags) {
+int safe_open(char *filename, int flags, mode_t mode) {
   int fd;
-  if ((fd = open(filename, flags)) == FILE_ERROR) {
+  if ((fd = open(filename, flags, mode)) == FILE_ERROR) {
     perror("Error opening file");
     exit(EXIT_FAILURE);
   } else {

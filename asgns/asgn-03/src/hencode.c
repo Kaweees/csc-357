@@ -22,18 +22,14 @@ void hencode(int infile, int outfile) {
   // createHeader(char_freq, outfile);
   HuffmanNode* root = buildHuffmanTree(char_freq);
   char** huffman_codes = buildCodes(root);
-  // int i;
-  // for (i = 0; i < MAX_CODE_LENGTH; i++) {
-  //   if (char_freq->frequencies[i] > 0) {
-  //     write(fileno(outfile), huffman_codes[i], strlen(huffman_codes[i]));
-  //   }
-  // }
-
   for (int i = 0; i < MAX_CODE_LENGTH; i++) {
     if (char_freq->frequencies[i] > 0) {
       printf("0x%02x: %d\n", i, char_freq->frequencies[i]);
     }
   }
+  // int frequencyNetworkByte;
+  // count = htonl(count);
+  // writeFile(fd, &count, sizeof(int));
   freeFileContent(file);
   freeFrequencyList(char_freq);
   freeHuffmanTree(root);           /* Free the Huffman tree */
@@ -42,13 +38,13 @@ void hencode(int infile, int outfile) {
 
 int main(int argc, char* argv[]) {
   if (argc == 2) {
-    int infile = safe_open(*(argv + 1), O_RDONLY);
+    int infile = safe_open(*(argv + 1), O_RDONLY, S_IRWXU);
     int outfile = fileno(stdout);
     hencode(infile, outfile);
     close(infile);
   } else if (argc == 3) {
-    int infile = safe_open(*(argv + 1), O_RDONLY);
-    int outfile = safe_open(*(argv + 1), (O_WRONLY | O_CREAT | O_TRUNC));
+    int infile = safe_open(*(argv + 1), O_RDONLY, S_IRWXU);
+    int outfile = safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
     hencode(infile, outfile);
     close(infile);
     close(outfile);
