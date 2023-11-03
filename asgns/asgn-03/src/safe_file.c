@@ -1,10 +1,11 @@
+#include "safe_file.h"
+
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fcntl.h> 
 #include <sys/stat.h>
 
 #include "safe_mem.h"
-#include "safe_file.h"
 
 #define FILE_ERROR -1
 
@@ -26,7 +27,7 @@ int safe_open(char *filename, int flags) {
 
 /**
  * Opens a file and stores the contents in a FileContent
- * 
+ *
  * @param fd the file pointer to read from
  */
 FileContent *safe_read(int fd) {
@@ -38,9 +39,10 @@ FileContent *safe_read(int fd) {
   } else {
     FileContent *file_content = (FileContent *)safe_malloc(sizeof(FileContent));
     file_content->file_size = file_info.st_size;
-    printf("Poggies: %d\n", (int) file_info.st_size);
+    printf("Poggies: %d\n", (int)file_info.st_size);
     file_content->file_contents = (char *)safe_malloc(file_content->file_size);
-    if (read(fd, file_content->file_contents, file_content->file_size) == FILE_ERROR) {
+    if (read(fd, file_content->file_contents, file_content->file_size) ==
+        FILE_ERROR) {
       perror("Error reading file");
       freeFileContent(file_content);
       close(fd);

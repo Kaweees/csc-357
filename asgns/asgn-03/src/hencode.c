@@ -9,7 +9,7 @@
 
 /**
  * @brief Reads a file and compresses it using Huffman coding
- * 
+ *
  * @param infile - a pointer to the file to read from
  * @param outfile - a pointer to the file to write to
  */
@@ -31,7 +31,8 @@ void hencode(FILE* infile, FILE* outfile) {
 
 int main(int argc, char* argv[]) {
   if (argc == 2) {
-    FILE* infile; FILE* outfile;
+    FILE* infile;
+    FILE* outfile;
     infile = fopen(*(argv + 1), "r");
     outfile = stdout;
     if (infile == NULL || outfile == NULL) {
@@ -43,7 +44,8 @@ int main(int argc, char* argv[]) {
       fclose(outfile);
     }
   } else if (argc == 3) {
-    FILE* infile; FILE* outfile;
+    FILE* infile;
+    FILE* outfile;
     infile = fopen(*(argv + 1), "r");
     outfile = fopen(*(argv + 1), "r");
     if (infile == NULL || outfile == NULL) {

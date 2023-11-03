@@ -11,7 +11,7 @@ struct FileContent {
   /* The length of the file contents in bytes */
   ssize_t file_size;
   /* The pointer to the file contents */
-  char* file_contents;
+  char *file_contents;
 };
 
 int safe_open(char *filename, int flags);
