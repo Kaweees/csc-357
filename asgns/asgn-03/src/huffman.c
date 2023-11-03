@@ -1,15 +1,15 @@
 #include "huffman.h"
 
+#include <arpa/inet.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdint.h>
-#include <arpa/inet.h>
 
-#include "safe_mem.h"
 #include "safe_file.h"
+#include "safe_mem.h"
 
 /**
  * Opens a file and counts the frequency of each character in the file
