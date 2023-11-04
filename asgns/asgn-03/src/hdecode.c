@@ -12,8 +12,9 @@
 #include "safe_file.h"
 #include "safe_mem.h"
 
-#define HEADER_CHAR_SIZE 5 /* The size in bytes of a character and its frequency in the header */
-#define BITS_PER_BYTE    8 /* The number of bits in a byte */
+#define HEADER_CHAR_SIZE \
+  5 /* The size in bytes of a character and its frequency in the header */
+#define BITS_PER_BYTE 8 /* The number of bits in a byte */
 
 /**
  * @brief Reads a compressed file and decompresses it using Huffman coding
@@ -28,7 +29,7 @@ void hdecode(int infile, int outfile) {
     freeFileContent(file_contents);
     freeFrequencyList(char_freq);
   } else {
-      void *curr = file_contents->file_contents;
+    void* curr = file_contents->file_contents;
     /* Read the amount of characters in the header */
     uint8_t size = (*(uint8_t*)curr) + 1;
     /* Move the pointer to the next byte */
@@ -44,10 +45,10 @@ void hdecode(int infile, int outfile) {
       /* Offset the pointer by the size of the frequency */
       curr += sizeof(uint32_t);
       bytes_read += sizeof(uint32_t);
-      if (char_freq->frequencies[(int) ascii] == 0) {
+      if (char_freq->frequencies[(int)ascii] == 0) {
         ++char_freq->num_non_zero_freq;
       }
-      char_freq->frequencies[(int) ascii]+= frequency;
+      char_freq->frequencies[(int)ascii] += frequency;
       num_chars += frequency;
     }
     if (num_chars == 1) {
@@ -56,7 +57,7 @@ void hdecode(int infile, int outfile) {
       freeFileContent(file_contents);
       freeFrequencyList(char_freq);
     } else {
-        HuffmanNode* root = buildHuffmanTree(char_freq);
+      HuffmanNode* root = buildHuffmanTree(char_freq);
       char** huffman_codes = buildCodes(root);
       size_t buffer_size = 1;
       for (int i = 0; i < MAX_CODE_LENGTH; i++) {
@@ -64,10 +65,11 @@ void hdecode(int infile, int outfile) {
           buffer_size += char_freq->frequencies[i] * strlen(huffman_codes[i]);
         }
       }
-      char * buffer = calloc(buffer_size, sizeof(char));
+      char* buffer = calloc(buffer_size, sizeof(char));
       int buffer_index = 0;
       /* Read until the end of the file */
-      while ((size_t) curr < (size_t) (file_contents->file_contents + file_contents->file_size)) {
+      while ((size_t)curr < (size_t)(file_contents->file_contents +
+                                     file_contents->file_size)) {
         uint32_t curr_num = htonl(*(uint32_t*)curr);
         /* Offset the pointer by the size of the frequency */
         curr += sizeof(uint32_t);
@@ -75,7 +77,8 @@ void hdecode(int infile, int outfile) {
         for (int i = 0; i < sizeof(uint32_t) * BITS_PER_BYTE; i++) {
           if (buffer_index >= buffer_size) {
             break;
-          } else if (curr_num & 1 << ((sizeof(uint32_t) * BITS_PER_BYTE) - 1 - i)) {
+          } else if (curr_num &
+                     1 << ((sizeof(uint32_t) * BITS_PER_BYTE) - 1 - i)) {
             buffer[buffer_index] = '1';
           } else {
             buffer[buffer_index] = '0';
@@ -99,7 +102,7 @@ void hdecode(int infile, int outfile) {
       freeFileContent(file_contents);
       freeFrequencyList(char_freq);
       freeHuffmanTree(root);           /* Free the Huffman tree */
-      freeHuffmanCodes(huffman_codes); /* Free the Huffman codes */  
+      freeHuffmanCodes(huffman_codes); /* Free the Huffman codes */
     }
   }
 }

@@ -31,7 +31,7 @@ void hencode(int infile, int outfile) {
     freeFileContent(file_contents);
     freeFrequencyList(char_freq);
   } else {
-      FrequencyList* char_freq = countFrequencies(file_contents);
+    FrequencyList* char_freq = countFrequencies(file_contents);
     createHeader(char_freq, outfile);
     HuffmanNode* root = buildHuffmanTree(char_freq);
     char** huffman_codes = buildCodes(root);
