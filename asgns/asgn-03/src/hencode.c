@@ -13,7 +13,7 @@
 #include "safe_mem.h"
 
 #define SPECIAL_INT_SIZE 32
-#define BITS_PER_BYTE 8
+#define BITS_PER_BYTE    8
 
 /**
  * @brief Reads a file and compresses it using Huffman coding
@@ -34,15 +34,16 @@ void hencode(int infile, int outfile) {
     correspondingCode = huffman_codes[(int)file_contents->file_contents[i]];
     for (int j = 0; j < strlen(correspondingCode); j++) {
       if (correspondingCode[j] == '1') {
-        frequencyNetworkByte |= (1 << ((sizeof(correspondingCode) * BITS_PER_BYTE) - 1 - count));
+        frequencyNetworkByte |=
+            (1 << ((sizeof(correspondingCode) * BITS_PER_BYTE) - 1 - count));
       }
       count++;
-    if (count == sizeof(uint32_t) * BITS_PER_BYTE) {
-      frequencyNetworkByte = htonl(frequencyNetworkByte);
-      safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
-      frequencyNetworkByte = 0;
-      count = 0;
-    }
+      if (count == sizeof(uint32_t) * BITS_PER_BYTE) {
+        frequencyNetworkByte = htonl(frequencyNetworkByte);
+        safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
+        frequencyNetworkByte = 0;
+        count = 0;
+      }
     }
   }
   /* Change the byte order to network byte order (big endian) */
