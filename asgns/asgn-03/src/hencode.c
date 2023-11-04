@@ -23,37 +23,46 @@
  */
 void hencode(int infile, int outfile) {
   FileContent* file_contents = safe_read(infile);
-  FrequencyList* char_freq = countFrequencies(file_contents);
-  createHeader(char_freq, outfile);
-  HuffmanNode* root = buildHuffmanTree(char_freq);
-  char** huffman_codes = buildCodes(root);
-  int count = 0;
-  uint32_t frequencyNetworkByte = 0;
-  char* correspondingCode = NULL;
-  for (int i = 0; i < file_contents->file_size; i++) {
-    correspondingCode = huffman_codes[(int)file_contents->file_contents[i]];
-    for (int j = 0; j < strlen(correspondingCode); j++) {
-      if (correspondingCode[j] == '1') {
-        frequencyNetworkByte |=
-            (1 << ((sizeof(correspondingCode) * BITS_PER_BYTE) - 1 - count));
-      }
-      count++;
-      if (count == sizeof(uint32_t) * BITS_PER_BYTE) {
-        frequencyNetworkByte = htonl(frequencyNetworkByte);
-        safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
-        frequencyNetworkByte = 0;
-        count = 0;
+  if (file_contents->file_size == 0) {
+    freeFileContent(file_contents);
+  } else if (file_contents->file_size == 1) {
+    FrequencyList* char_freq = countFrequencies(file_contents);
+    createHeader(char_freq, outfile);
+    freeFileContent(file_contents);
+    freeFrequencyList(char_freq);
+  } else {
+      FrequencyList* char_freq = countFrequencies(file_contents);
+    createHeader(char_freq, outfile);
+    HuffmanNode* root = buildHuffmanTree(char_freq);
+    char** huffman_codes = buildCodes(root);
+    int count = 0;
+    uint32_t frequencyNetworkByte = 0;
+    char* correspondingCode = NULL;
+    for (int i = 0; i < file_contents->file_size; i++) {
+      correspondingCode = huffman_codes[(int)file_contents->file_contents[i]];
+      for (int j = 0; j < strlen(correspondingCode); j++) {
+        if (correspondingCode[j] == '1') {
+          frequencyNetworkByte |=
+              (1 << ((sizeof(correspondingCode) * BITS_PER_BYTE) - 1 - count));
+        }
+        count++;
+        if (count == sizeof(uint32_t) * BITS_PER_BYTE) {
+          frequencyNetworkByte = htonl(frequencyNetworkByte);
+          safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
+          frequencyNetworkByte = 0;
+          count = 0;
+        }
       }
     }
+    /* Change the byte order to network byte order (big endian) */
+    frequencyNetworkByte = htonl(frequencyNetworkByte);
+    /* Write the byte to the file if the byte is full */
+    safe_write(outfile, &frequencyNetworkByte, count / BITS_PER_BYTE);
+    freeFileContent(file_contents);
+    freeFrequencyList(char_freq);
+    freeHuffmanTree(root);           /* Free the Huffman tree */
+    freeHuffmanCodes(huffman_codes); /* Free the Huffman codes */
   }
-  /* Change the byte order to network byte order (big endian) */
-  frequencyNetworkByte = htonl(frequencyNetworkByte);
-  /* Write the byte to the file if the byte is full */
-  safe_write(outfile, &frequencyNetworkByte, count / BITS_PER_BYTE);
-  freeFileContent(file_contents);
-  freeFrequencyList(char_freq);
-  freeHuffmanTree(root);           /* Free the Huffman tree */
-  freeHuffmanCodes(huffman_codes); /* Free the Huffman codes */
 }
 
 int main(int argc, char* argv[]) {
