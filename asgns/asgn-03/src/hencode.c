@@ -13,6 +13,7 @@
 #include "safe_mem.h"
 
 #define SPECIAL_INT_SIZE 32
+#define BITS_PER_BYTE 8
 
 /**
  * @brief Reads a file and compresses it using Huffman coding
@@ -26,37 +27,28 @@ void hencode(int infile, int outfile) {
   createHeader(char_freq, outfile);
   HuffmanNode* root = buildHuffmanTree(char_freq);
   char** huffman_codes = buildCodes(root);
-  for (int i = 0; i < char_freq->size; i++) {
-    if (char_freq->frequencies[i] > 0) {
-      printf("%c: %s\n", i, huffman_codes[i]);
-    }
-  }
-  printf("size: %d\n", (int)file_contents->file_size);
   int count = 0;
   uint32_t frequencyNetworkByte = 0;
   char* correspondingCode = NULL;
   for (int i = 0; i < file_contents->file_size; i++) {
     correspondingCode = huffman_codes[(int)file_contents->file_contents[i]];
     for (int j = 0; j < strlen(correspondingCode); j++) {
-      if (count == SPECIAL_INT_SIZE) {
-        /* Change the byte order to network byte order (big endian) */
-        frequencyNetworkByte = htonl(frequencyNetworkByte);
-        /* Write the byte to the file if the byte is full */
-        safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
-        frequencyNetworkByte = 0;
-        count = 0;
-      }
-      frequencyNetworkByte <<= 1;
       if (correspondingCode[j] == '1') {
-        frequencyNetworkByte++;
+        frequencyNetworkByte |= (1 << ((sizeof(correspondingCode) * BITS_PER_BYTE) - 1 - count));
       }
       count++;
+    if (count == sizeof(uint32_t) * BITS_PER_BYTE) {
+      frequencyNetworkByte = htonl(frequencyNetworkByte);
+      safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
+      frequencyNetworkByte = 0;
+      count = 0;
     }
-    /* Change the byte order to network byte order (big endian) */
-    frequencyNetworkByte = htonl(frequencyNetworkByte);
-    /* Write the byte to the file if the byte is full */
-    safe_write(outfile, &frequencyNetworkByte, sizeof(uint32_t));
+    }
   }
+  /* Change the byte order to network byte order (big endian) */
+  frequencyNetworkByte = htonl(frequencyNetworkByte);
+  /* Write the byte to the file if the byte is full */
+  safe_write(outfile, &frequencyNetworkByte, count / BITS_PER_BYTE);
   freeFileContent(file_contents);
   freeFrequencyList(char_freq);
   freeHuffmanTree(root);           /* Free the Huffman tree */
