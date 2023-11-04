@@ -6,7 +6,7 @@
 #define HUFFMAN_H
 
 #define MAX_CODE_LENGTH   256 /* total number of characters in ASCII */
-#define ARGUEMENTS_AMOUNT 2   /* number of arguments for the program */
+#define HENCODE_ARGUEMENTS_AMOUNT 2   /* number of arguments for the program */
 
 typedef struct FrequencyList FrequencyList;
 typedef struct HuffmanNode HuffmanNode;

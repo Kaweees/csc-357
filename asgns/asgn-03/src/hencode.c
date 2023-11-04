@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
     close(infile);
     close(outfile);
   } else {
-    fprintf(stderr, "Usage: %s <input_file> [ <output_file>\n", argv[0]);
+    fprintf(stderr, "Usage: %s infile [ outfile ]\n", argv[0]);
     return EXIT_FAILURE;
   }
   return 0;
