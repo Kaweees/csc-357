@@ -6,16 +6,23 @@
 HENCODE_TARGET := hencode
 HDECODE_TARGET := hdecode
 
+## Handin Section: change these variables based on your handin
+# -----------------------------------------------------------------------------
+# The assignment number.
+HANDIN_ASGN := asgn3
+# The class name.
+HANDIN_CLASS := pn-cs357
+
 ## Compiler Section: change these variables based on your compiler
 # -----------------------------------------------------------------------------
 # The compiler executable.
 CC := gcc
 # The compiler flags.
-CFLAGS := -Wall
+CFLAGS := -Wall -g
 # The linker executable.
 LD := gcc
 # The linker flags.
-LDFLAGS := -Wall
+LDFLAGS := -Wall -g
 # The shell executable.
 SHELL := /bin/bash
 
@@ -31,15 +38,16 @@ DEBUGGER := gdb
 DEBUGGER_FLAGS := 
 
 # The name of the test input file
-TEST_INPUT := test_input.txt
+TEST_INPUT := 12_longcodes
 # The name of the test output files
-HENCODE_OUTPUT := hencode_output.txt
-HDECODE_OUTPUT := hdecode_output.txt
+HENCODE_OUTPUT := hencode_output.huff
+HDECODE_OUTPUT := hdecode_output
 # The name of the reference executable
 REF_EXE := ~pn-cs357/demos/htable
+
 # The name of the reference output file
-REF_ENCODE_OUTPUT := expected_output.txt
-REF_DECODE_OUTPUT := expected_output.txt
+REF_ENCODE_OUTPUT := 12_longcodes.huff
+REF_HDECODE_OUTPUT := 12_longcodes
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -91,15 +99,14 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Test target: build and test the program against sample input
 test: $(HENCODE_TARGET) $(HDECODE_TARGET)
-	@echo "Testing $(TARGET)..."
+	@echo "Testing $(HENCODE_TARGET) and $(HDECODE_TARGET)..."
 	@echo "Testing memory leaks..."
 	$(MEMCHECK) $(MEMCHECK_FLAGS) $(HENCODE_BIN) $(TEST_INPUT) $(HENCODE_OUTPUT)
 	$(MEMCHECK) $(MEMCHECK_FLAGS) $(HDECODE_BIN) $(HENCODE_OUTPUT) $(HDECODE_OUTPUT)
 	@echo "Comparing output to $(REF_EXE):"
-	$(REF_EXE) $(TEST_INPUT) $(REF_ENCODE_OUTPUT)
-	diff $(HENCODE_OUTPUT) $(REF_ENCODE_OUTPUT)
-	$(REF_EXE) $(HENCODE_OUTPUT) $(REF_DECODE_OUTPUT)
-	diff $(HDECODE_OUTPUT) $(REF_DECODE_OUTPUT)
+	xxd <(diff $(HENCODE_OUTPUT) $(REF_ENCODE_OUTPUT))
+	diff $(HDECODE_OUTPUT) $(REF_HDECODE_OUTPUT)
+	rm $(HENCODE_OUTPUT) $(HDECODE_OUTPUT)
 
 # Clean target: remove build artifacts and non-essential files
 clean:
@@ -130,3 +137,14 @@ help:
 	@echo "  clean            Remove build artifacts and non-essential files"
 	@echo "  debug            Use $(DEBUGGER) to debug $(HENCODE_TARGET) and $(HDECODE_TARGET)"
 	@echo "  help             Display this help information"
+	@echo "  handin           Hand in the assignment using the handin program"
+	@echo "  latedays         Reopen the assignment using the latedays program"
+
+# Handin target: hand in the assignment using the handin program
+handin:
+	@echo "Submitting $(HANDIN_ASGN) via handin..."
+	handin $(HANDIN_CLASS) $(HANDIN_ASGN) *.c *.h Makefile README
+
+# Latedays target: reopen the assignment using the latedays program
+latedays:
+	@echo "Reopening $(HANDIN_ASGN) via latedays..."
