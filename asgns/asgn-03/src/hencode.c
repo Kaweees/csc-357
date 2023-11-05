@@ -62,7 +62,7 @@ void hencode(int infile, int outfile) {
     if (count % BITS_PER_BYTE) {
       safe_write(outfile, &frequencyNetworkByte, (count / BITS_PER_BYTE) + 1);
     } else {
-      safe_write(outfile, &frequencyNetworkByte, count / BITS_PER_BYTE );
+      safe_write(outfile, &frequencyNetworkByte, count / BITS_PER_BYTE);
     }
     freeFileContent(file_contents);
     freeFrequencyList(char_freq);

@@ -40,7 +40,7 @@ FrequencyList* countFrequencies(FileContent* file_contents) {
     if (char_freq->frequencies[(int)file_contents->file_contents[i]] == 0) {
       char_freq->num_non_zero_freq++;
     }
-  char_freq->frequencies[(int)file_contents->file_contents[i]]++;
+    char_freq->frequencies[(int)file_contents->file_contents[i]]++;
   }
   return char_freq;
 }
