@@ -38,7 +38,7 @@ DEBUGGER := gdb
 DEBUGGER_FLAGS := 
 
 # The name of the test input file
-TEST_INPUT := 12_longcodes
+TEST_INPUT := tests/12_longcodes
 # The name of the test output files
 HENCODE_OUTPUT := hencode_output.huff
 HDECODE_OUTPUT := hdecode_output
@@ -46,8 +46,8 @@ HDECODE_OUTPUT := hdecode_output
 REF_EXE := ~pn-cs357/demos/htable
 
 # The name of the reference output file
-REF_ENCODE_OUTPUT := 12_longcodes.huff
-REF_HDECODE_OUTPUT := 12_longcodes
+REF_ENCODE_OUTPUT := tests/12_longcodes.huff
+REF_HDECODE_OUTPUT := tests/12_longcodes
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -106,21 +106,15 @@ test: $(HENCODE_TARGET) $(HDECODE_TARGET)
 	@echo "Comparing output to $(REF_EXE):"
 	xxd <(diff $(HENCODE_OUTPUT) $(REF_ENCODE_OUTPUT))
 	diff $(HDECODE_OUTPUT) $(REF_HDECODE_OUTPUT)
-	rm $(HENCODE_OUTPUT) $(HDECODE_OUTPUT)
 
 # Clean target: remove build artifacts and non-essential files
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm $(HENCODE_OUTPUT) $(HDECODE_OUTPUT)
 
 # Debug target: use a debugger to debug the program
 debug: $(BINS)
-	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
-	@mkdir -p $(OBJ_DIR) # Create the object directory if it doesn't exist
-	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
-	$(CC) $(CFLAGS) -g $(INCS) -c $(HENCODE_SRCS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(HENCODE_BIN) $(HENCODE_OBJS)
-	$(CC) $(CFLAGS) -g $(INCS) -c $(HDECODE_SRCS)
-	$(LD) $(LDFLAGS) $(OBJS) -o $(HDECODE_BIN) $(HDECODE_OBJS)
+	
 	@echo "Debugging $(TARGET)..."
 	$(DEBUGGER) $(DEBUGGER_FLAGS) $(HENCODE_BIN) $(TEST_INPUT) $(HENCODE_OUTPUT)
 	$(DEBUGGER) $(DEBUGGER_FLAGS) $(HDECODE_BIN) $(HENCODE_OUTPUT) $(HDECODE_OUTPUT)

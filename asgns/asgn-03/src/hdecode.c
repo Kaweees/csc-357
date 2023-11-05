@@ -46,7 +46,7 @@ void hdecode(int infile, int outfile) {
       /* Offset the pointer by the size of the frequency */
       curr += sizeof(uint32_t);
       bytes_read += sizeof(uint32_t);
-      
+
       if (char_freq->frequencies[(int)ascii] == 0) {
         ++char_freq->num_non_zero_freq;
       }
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
       outfile = fileno(stdout);
     } else {
       outfile = safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
-    }    
+    }
   }
   hdecode(infile, outfile);
   close(infile);
