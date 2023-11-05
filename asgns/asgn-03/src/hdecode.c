@@ -36,7 +36,8 @@ void hdecode(int infile, int outfile) {
     size_t num_chars = 0;
     size_t bytes_read = 0;
     curr += sizeof(uint8_t);
-    for (int i = 0; i < size; i++) {
+    int i;
+    for (i = 0; i < size; i++) {
       uint8_t ascii = *(uint8_t*)curr;
       /* Move the pointer to the next byte */
       curr += sizeof(uint8_t);
@@ -60,7 +61,8 @@ void hdecode(int infile, int outfile) {
       HuffmanNode* root = buildHuffmanTree(char_freq);
       char** huffman_codes = buildCodes(root);
       size_t buffer_size = 1;
-      for (int i = 0; i < MAX_CODE_LENGTH; i++) {
+      int i;
+      for (i = 0; i < MAX_CODE_LENGTH; i++) {
         if (char_freq->frequencies[i] > 0) {
           buffer_size += char_freq->frequencies[i] * strlen(huffman_codes[i]);
         }
@@ -74,7 +76,7 @@ void hdecode(int infile, int outfile) {
         /* Offset the pointer by the size of the frequency */
         curr += sizeof(uint32_t);
         // int num_bits = 0;
-        for (int i = 0; i < sizeof(uint32_t) * BITS_PER_BYTE; i++) {
+        for (i = 0; i < sizeof(uint32_t) * BITS_PER_BYTE; i++) {
           if (buffer_index >= buffer_size) {
             break;
           } else if (curr_num &
@@ -87,7 +89,7 @@ void hdecode(int infile, int outfile) {
         }
       }
       HuffmanNode* curr_node = root;
-      for (int i = 0; i < buffer_size; i++) {
+      for (i = 0; i < buffer_size; i++) {
         if (curr_node->left == NULL && curr_node->right == NULL) {
           safe_write(outfile, &curr_node->char_ascii, sizeof(char));
           curr_node = root;
@@ -108,22 +110,16 @@ void hdecode(int infile, int outfile) {
 }
 
 int main(int argc, char* argv[]) {
-  if ((argc == 3) || ((argc == 2) && (strcmp(argv[1], "-") == 0))) {
-    int infile = safe_open(*(argv + 1), O_RDONLY, S_IRWXU);
-    int outfile =
-        safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
-    hdecode(infile, outfile);
-    close(infile);
-    close(outfile);
+  int infile = fileno(stdin);
+  int outfile = fileno(stdout);
+  if ((argc == 2 && strcmp(argv[1], "-") == 0) || argc == 3) {
+    outfile = safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
+  } else if (argc == 2) {
+    infile = safe_open(*(argv + 1), O_RDONLY, S_IRWXU);
+    outfile = fileno(stdout);
   }
-  if (argc == 2) {
-    int infile = fileno(stdin);
-    int outfile = safe_open(*(argv + 2), O_RDONLY, S_IRWXU);
-    hdecode(infile, outfile);
-    close(infile);
-  } else {
-    fprintf(stderr, "Usage: %s [ ( infile | - ) [ outfile ] ]\n", argv[0]);
-    return EXIT_FAILURE;
-  }
+  hdecode(infile, outfile);
+  close(infile);
+  close(outfile);
   return 0;
 }

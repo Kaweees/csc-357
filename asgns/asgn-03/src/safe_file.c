@@ -37,10 +37,10 @@ FileContent *safe_read(int fd) {
     close(fd);
     exit(EXIT_FAILURE);
   } else {
-    FileContent *file_content = (FileContent *)safe_malloc(sizeof(FileContent));
+    FileContent *file_content = (FileContent *)safe_calloc(sizeof(FileContent), 1);
     file_content->file_size = file_info.st_size;
     file_content->file_contents =
-        (unsigned char *)safe_malloc(file_content->file_size);
+        (unsigned char *)safe_calloc(sizeof(unsigned char), file_content->file_size);
     if (read(fd, file_content->file_contents, file_content->file_size) ==
         FILE_ERROR) {
       perror("Error reading file");

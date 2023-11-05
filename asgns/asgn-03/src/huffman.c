@@ -19,11 +19,11 @@
  * @return a pointer to the FrequencyList
  */
 FrequencyList* createFrequencyList(size_t size) {
-  FrequencyList* freq = (FrequencyList*)safe_malloc(sizeof(FrequencyList));
+  FrequencyList* freq = (FrequencyList*)safe_calloc(sizeof(FrequencyList), 1);
   freq->num_non_zero_freq = 0;
   freq->size = size;
   freq->frequencies =
-      (unsigned char*)safe_calloc(freq->size, sizeof(unsigned char));
+      (unsigned int*)safe_calloc(freq->size, sizeof(unsigned int));
   return freq;
 }
 
@@ -33,13 +33,14 @@ FrequencyList* createFrequencyList(size_t size) {
  * @param file - a pointer to the file to count the frequencies of
  * @return an array of character frequencies in ascending asci order
  */
-FrequencyList* countFrequencies(FileContent* contents) {
+FrequencyList* countFrequencies(FileContent* file_contents) {
   FrequencyList* char_freq = createFrequencyList(MAX_CODE_LENGTH);
-  for (int i = 0; i < contents->file_size; i++) {
-    if (char_freq->frequencies[(int)contents->file_contents[i]] == 0) {
-      ++char_freq->num_non_zero_freq;
+  int i;
+  for (i = 0; i < file_contents->file_size; i++) {
+    if (char_freq->frequencies[(int)file_contents->file_contents[i]] == 0) {
+      char_freq->num_non_zero_freq++;
     }
-    char_freq->frequencies[(int)contents->file_contents[i]]++;
+  char_freq->frequencies[(int)file_contents->file_contents[i]]++;
   }
   return char_freq;
 }
@@ -55,7 +56,8 @@ FrequencyList* countFrequencies(FileContent* contents) {
 void createHeader(FrequencyList* freq_list, int outfile) {
   uint8_t size = freq_list->num_non_zero_freq - 1;
   safe_write(outfile, &size, sizeof(uint8_t));
-  for (int i = 0; i < freq_list->size; i++) {
+  int i;
+  for (i = 0; i < freq_list->size; i++) {
     if (freq_list->frequencies[i] > 0) {
       uint8_t ascii = i;
       uint32_t frequency = freq_list->frequencies[i];

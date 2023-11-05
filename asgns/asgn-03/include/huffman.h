@@ -16,7 +16,7 @@ typedef struct HuffmanCode HuffmanCode;
 /* Represents a list of character frequencies */
 struct FrequencyList {
   /* The array of frequencies for each ASCII character */
-  unsigned char* frequencies;
+  unsigned int* frequencies;
   /* The number of non-zero frequencies in the list */
   unsigned int num_non_zero_freq;
   /* The size of the list */
