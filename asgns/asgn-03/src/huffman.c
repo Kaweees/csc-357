@@ -226,8 +226,10 @@ void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str) {
   } else {
     char left_code[strlen(code_str) + 2];
     char right_code[strlen(code_str) + 2];
-    sprintf(left_code, "%s0", code_str);
-    sprintf(right_code, "%s1", code_str);
+    strcpy(left_code, code_str);
+    strcpy(right_code, code_str);
+    strcat(left_code, "0");
+    strcat(right_code, "1");
     buildCodesHelper(node->left, huffman_codes, left_code);
     buildCodesHelper(node->right, huffman_codes, right_code);
   }
