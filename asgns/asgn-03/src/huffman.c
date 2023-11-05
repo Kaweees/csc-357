@@ -186,7 +186,6 @@ HuffmanNode* combine(HuffmanNode* a, HuffmanNode* b) {
 HuffmanNode* buildHuffmanTree(FrequencyList* frequencies) {
   HuffmanNode* head;
   int i;
-
   head = createNode(0, 0, NULL, NULL, NULL);
   for (i = 0; i < MAX_CODE_LENGTH; i++) {
     HuffmanNode* newNode;
@@ -196,13 +195,10 @@ HuffmanNode* buildHuffmanTree(FrequencyList* frequencies) {
     }
   }
 
-  HuffmanNode* leftNode;
-  HuffmanNode* rightNode;
-
   /* creates new node with updated freq */
   while (head->next->next != NULL) {
-    leftNode = head->next;
-    rightNode = head->next->next;
+    HuffmanNode* leftNode = head->next;
+    HuffmanNode* rightNode = head->next->next;
     /* create the new node */
     HuffmanNode* newNode = createNode(
         0, leftNode->char_freq + rightNode->char_freq, NULL, NULL, NULL);

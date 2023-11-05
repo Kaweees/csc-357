@@ -31,7 +31,7 @@ void hdecode(int infile, int outfile) {
   } else {
     void* curr = file_contents->file_contents;
     /* Read the amount of characters in the header */
-    uint8_t size = (*(uint8_t*)curr) + 1;
+    uint16_t size = (*(uint8_t*)curr) + 1;
     /* Move the pointer to the next byte */
     size_t num_chars = 0;
     size_t bytes_read = 0;
@@ -46,15 +46,24 @@ void hdecode(int infile, int outfile) {
       /* Offset the pointer by the size of the frequency */
       curr += sizeof(uint32_t);
       bytes_read += sizeof(uint32_t);
+      
       if (char_freq->frequencies[(int)ascii] == 0) {
         ++char_freq->num_non_zero_freq;
       }
       char_freq->frequencies[(int)ascii] += frequency;
       num_chars += frequency;
     }
-    if (num_chars == 1) {
-      char ascii = *(char*)curr;
-      safe_write(outfile, &ascii, sizeof(char));
+    if (char_freq->num_non_zero_freq == 1) {
+      char ascii = 0;
+      for (i = 0; i < MAX_CODE_LENGTH; i++) {
+        if (char_freq->frequencies[i] > 0) {
+          ascii = i;
+          break;
+        }
+      }
+      for (i = 0; i < char_freq->frequencies[(int)ascii]; i++) {
+        safe_write(outfile, &ascii, sizeof(char));
+      }
       freeFileContent(file_contents);
       freeFrequencyList(char_freq);
     } else {
@@ -73,7 +82,7 @@ void hdecode(int infile, int outfile) {
       while ((size_t)curr < (size_t)(file_contents->file_contents +
                                      file_contents->file_size)) {
         uint32_t curr_num = htonl(*(uint32_t*)curr);
-        /* Offset the pointer by the size of the frequency */
+        /* Offset the ointer by the size of the frequency */
         curr += sizeof(uint32_t);
         // int num_bits = 0;
         for (i = 0; i < sizeof(uint32_t) * BITS_PER_BYTE; i++) {
@@ -112,11 +121,18 @@ void hdecode(int infile, int outfile) {
 int main(int argc, char* argv[]) {
   int infile = fileno(stdin);
   int outfile = fileno(stdout);
-  if ((argc == 2 && strcmp(argv[1], "-") == 0) || argc == 3) {
-    outfile = safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
-  } else if (argc == 2) {
-    infile = safe_open(*(argv + 1), O_RDONLY, S_IRWXU);
-    outfile = fileno(stdout);
+  if (argc == 3) {
+    if (strcmp(argv[1], "-") == 0) {
+      infile = fileno(stdin);
+    } else {
+      infile = safe_open(*(argv + 1), O_RDONLY, S_IRWXU);
+    }
+
+    if (strcmp(argv[2], "-") == 0) {
+      outfile = fileno(stdout);
+    } else {
+      outfile = safe_open(*(argv + 2), (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
+    }    
   }
   hdecode(infile, outfile);
   close(infile);
