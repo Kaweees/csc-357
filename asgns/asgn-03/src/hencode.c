@@ -63,7 +63,8 @@ void hencode(int infile, int outfile) {
     /* Change the byte order to network byte order (big endian) */
     frequencyNetworkByte = htonl(frequencyNetworkByte);
     /* Write the byte to the file if the byte is full */
-    safe_write(outfile, &frequencyNetworkByte, (count / BITS_PER_BYTE) + (count % BITS_PER_BYTE));
+    safe_write(outfile, &frequencyNetworkByte,
+        (count / BITS_PER_BYTE) + (count % BITS_PER_BYTE));
     freeFileContent(file_contents);
     freeFrequencyList(char_freq);
     freeHuffmanTree(root);           /* Free the Huffman tree */
