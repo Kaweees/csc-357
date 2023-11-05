@@ -12,11 +12,7 @@
 #include "safe_file.h"
 #include "safe_mem.h"
 
-
-
-void mypwd(int infile, int outfile) {
-  
-}
+void mypwd(int infile, int outfile) {}
 
 int main(int argc, char* argv[]) {
   if (argc == 2) {

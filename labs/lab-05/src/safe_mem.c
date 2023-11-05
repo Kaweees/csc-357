@@ -1,9 +1,9 @@
+#include "safe_mem.h"
+
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-
-#include "safe_mem.h"
 
 #define FILE_ERROR -1
 

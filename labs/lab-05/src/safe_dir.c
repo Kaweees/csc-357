@@ -1,9 +1,9 @@
-#include <sys/stat.h>
-#include <sys/types.h>
+#include "safe_dir.h"
+
 #include <dirent.h>
 #include <errno.h>
-
-#include "safe_dir.h"
+#include <sys/stat.h>
+#include <sys/types.h>
 
 DIR safeOpenDir(char *filename, int flags, mode_t mode) {
   DIR *dir;
@@ -15,7 +15,7 @@ DIR safeOpenDir(char *filename, int flags, mode_t mode) {
     } else if (errno == EACCES) {
       /* Insufficient permissions. */
       perror("Permission denied.\n");
-    }else {
+    } else {
       /* Failed for some other reason */
       perror("Failed to open directory.\n");
     }
@@ -26,8 +26,8 @@ DIR safeOpenDir(char *filename, int flags, mode_t mode) {
 }
 
 DirContent *safeReadDir(DIR *dir) {
-  struct dirent *entry
-  DirContent *dir_contents = safeMalloc(sizeof(DirContent));
+  struct dirent *entry DirContent *dir_contents =
+      safeMalloc(sizeof(DirContent));
   while ((entry = readdir(dir)) != NULL) {
     dir_contents->entries[dir_contents->num_entries] = entry;
     dir_contents->num_entries++;
@@ -35,15 +35,9 @@ DirContent *safeReadDir(DIR *dir) {
   return dir_contents;
 }
 
-void safeRewindDir(int fd) {
-
-}
-void safeCloseDir(int fd) {
-
-}
-void freeDirContent(DirContent *dir_contents) {
-
-}
+void safeRewindDir(int fd) {}
+void safeCloseDir(int fd) {}
+void freeDirContent(DirContent *dir_contents) {}
 
 // opendir(3) open a directory for reading
 // readdir(3) read a directory entry
