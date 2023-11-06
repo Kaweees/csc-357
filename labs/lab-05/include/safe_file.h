@@ -18,31 +18,31 @@ struct FileContent {
 /* Represents the metadata of a file */
 struct FileStat {
   /* ID of device containing file */
-  dev_t     st_dev;
+  dev_t st_dev;
   /* inode number */
-  ino_t     st_ino; 
-  /* protection */    
-  mode_t    st_mode;    
+  ino_t st_ino;
+  /* protection */
+  mode_t st_mode;
   /* number of hard links */
-  nlink_t   st_nlink;   
+  nlink_t st_nlink;
   /* user ID of owner */
-  uid_t     st_uid;     
+  uid_t st_uid;
   /* group ID of owner */
-  gid_t     st_gid;     
+  gid_t st_gid;
   /* device ID (if special file) */
-  dev_t     st_rdev;    
+  dev_t st_rdev;
   /* total size, in bytes */
-  off_t     st_size;    
+  off_t st_size;
   /* blocksize for file system I/O */
-  blksize_t st_blksize; 
+  blksize_t st_blksize;
   /* number of 512B blocks allocated */
-  blkcnt_t  st_blocks;  
+  blkcnt_t st_blocks;
   /* time of last access */
-  time_t    st_atime;   
+  time_t st_atime;
   /* time of last modification */
-  time_t    st_mtime;   
+  time_t st_mtime;
   /* time of last status change */
-  time_t    st_ctime;   
+  time_t st_ctime;
 };
 
 int safeOpen(char *filename, int flags, mode_t mode);
