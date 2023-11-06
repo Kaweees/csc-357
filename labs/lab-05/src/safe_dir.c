@@ -6,7 +6,8 @@
 #include <sys/types.h>
 
 /**
- * A safe version of opendir that validates the directory stream and exits on failure
+ * A safe version of opendir that validates the directory stream and exits on
+ * failure
  *
  * @param filename The name of the directory to open.
  * @param flags The flags to use when opening the directory.
@@ -34,7 +35,8 @@ DIR safeOpenDir(char *filename, int flags, mode_t mode) {
 }
 
 /**
- * A safe version of readdir that validates the directory contents and exits on failure
+ * A safe version of readdir that validates the directory contents and exits on
+ * failure
  *
  * @param dir The directory stream to read from.
  * @return A pointer to the directory contents.
@@ -50,25 +52,27 @@ DirContent *safeReadDir(DIR *dir) {
 }
 
 /**
- * A safe version of rewinddir that validates the rewinded stream and exits on failure
+ * A safe version of rewinddir that validates the rewinded stream and exits on
+ * failure
  *
  * @param fd The directory stream to rewind.
  */
 void safeRewindDir(int fd) {}
 
 /**
- * A safe version of closedir that validates the closed stream and exits on failure
+ * A safe version of closedir that validates the closed stream and exits on
+ * failure
  *
  * @param fd The directory stream to rewind.
  */
 void safeCloseDir(int fd) {}
 
-
 /**
- * A safe version of stat that validates the file status (symlinks are followed) and exits on failure
+ * A safe version of stat that validates the file status (symlinks are followed)
+ * and exits on failure
  *
  * @param path The path to the file to stat.
-  * @param buf The buffer to store the file status in.
+ * @param buf The buffer to store the file status in.
  */
 void safeStat(char *path, struct stat *buf) {
   if (stat(path, buf) == -1) {
@@ -78,7 +82,8 @@ void safeStat(char *path, struct stat *buf) {
 }
 
 /**
- * A safe version of lsat that validates the file status (symlinks aren't followed) and exits on failure
+ * A safe version of lsat that validates the file status (symlinks aren't
+ * followed) and exits on failure
  *
  * @param path The path to the file to stat.
  * @param buf The buffer to store the file status in.

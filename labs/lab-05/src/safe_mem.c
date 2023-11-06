@@ -7,8 +7,6 @@
 
 #define FILE_ERROR -1
 
-struct stat file_info;
-
 /**
  * A safe version of malloc that validates memory allocation and exits on
  failure
