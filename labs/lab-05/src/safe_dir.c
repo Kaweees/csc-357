@@ -2,22 +2,26 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
+
+#include "safe_mem.h"
 
 /**
  * A safe version of opendir that validates the directory stream and exits on
  * failure
  *
- * @param filename The name of the directory to open.
- * @param flags The flags to use when opening the directory.
- * @param mode The mode to use when opening the directory.
+ * @param path The path to the directory to open.
  * @return A pointer to the directory stream.
  */
-DIR safeOpenDir(char *filename, int flags, mode_t mode) {
+DIR *safeOpenDir(const char *path) {
   DIR *dir;
   /* Open the directory */
-  if ((dir = opendir(filename)) == NULL) {
+  if ((dir = opendir(path)) == NULL) {
     if (errno == ENOENT) {
       /* Directory does not exist. */
       perror("Directory does not exist.\n");
@@ -42,11 +46,20 @@ DIR safeOpenDir(char *filename, int flags, mode_t mode) {
  * @return A pointer to the directory contents.
  */
 DirContent *safeReadDir(DIR *dir) {
-  struct dirent *entry DirContent *dir_contents =
-      safeMalloc(sizeof(DirContent));
+  DirContent *dir_contents = safeMalloc(sizeof(DirContent));
+  dir_contents->entries = NULL;
+  dir_contents->num_entries = 0;
+  struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
-    dir_contents->entries[dir_contents->num_entries] = entry;
-    dir_contents->num_entries++;
+    /* Skip hidden files */
+    if (entry->d_name[0] != '.') {
+      dir_contents->entries =
+          (struct dirent **)safeRealloc(dir_contents->entries,
+              (dir_contents->num_entries + 1) * sizeof(struct dirent *));
+
+      dir_contents->entries[dir_contents->num_entries] = entry;
+      dir_contents->num_entries++;
+    }
   }
   return dir_contents;
 }
@@ -55,9 +68,9 @@ DirContent *safeReadDir(DIR *dir) {
  * A safe version of rewinddir that validates the rewinded stream and exits on
  * failure
  *
- * @param fd The directory stream to rewind.
+ * @param dir The directory stream to rewind.
  */
-void safeRewindDir(int fd) {}
+void safeRewindDir(DIR *dir) { rewinddir(dir); }
 
 /**
  * A safe version of closedir that validates the closed stream and exits on
@@ -65,7 +78,7 @@ void safeRewindDir(int fd) {}
  *
  * @param fd The directory stream to rewind.
  */
-void safeCloseDir(int fd) {}
+void safeCloseDir(DIR *dir) { closedir(dir); }
 
 /**
  * A safe version of stat that validates the file status (symlinks are followed)
@@ -75,8 +88,8 @@ void safeCloseDir(int fd) {}
  * @param buf The buffer to store the file status in.
  */
 void safeStat(char *path, struct stat *buf) {
-  if (stat(path, buf) == -1) {
-    perror("Failed to stat file");
+  if (stat(path, buf) == DIR_ERROR) {
+    perror("Failed to stat file.\n");
     exit(EXIT_FAILURE);
   }
 }
@@ -89,8 +102,31 @@ void safeStat(char *path, struct stat *buf) {
  * @param buf The buffer to store the file status in.
  */
 void safeLstat(char *path, struct stat *buf) {
-  if (lstat(path, buf) == -1) {
-    perror("Failed to stat file");
+  if (lstat(path, buf) == DIR_ERROR) {
+    perror("Failed to stat file.\n");
     exit(EXIT_FAILURE);
   }
+}
+
+/**
+ * A safe version of chdir that validates the changed directory and exits on
+ * failure
+ *
+ * @param path The path to the directory to change to.
+ */
+void safeChdir(char *path) {
+  if (chdir(path) == DIR_ERROR) {
+    perror("Failed to change directory.\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+/**
+ * Frees the memory allocated for DirContent
+ *
+ * @param dir_contents The DirContent to free.
+ */
+void freeDirContent(DirContent *dir_contents) {
+  safeFree(dir_contents->entries);
+  safeFree(dir_contents);
 }

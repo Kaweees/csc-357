@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
-#define FILE_ERROR -1
-
 /**
  * A safe version of malloc that validates memory allocation and exits on
  failure
@@ -16,7 +14,7 @@
 void *safeMalloc(size_t size) {
   void *ptr;
   if (!(ptr = malloc(size))) {
-    perror("Memory allocation error");
+    perror("Memory allocation error.\n");
     exit(EXIT_FAILURE);
   }
   return ptr;
@@ -31,7 +29,7 @@ void *safeMalloc(size_t size) {
  */
 void *safeRealloc(void *ptr, size_t size) {
   if (!(ptr = realloc(ptr, size))) {
-    perror("Memory allocation error");
+    perror("Memory allocation error.\n");
     exit(EXIT_FAILURE);
   }
   return ptr;
@@ -47,7 +45,7 @@ void *safeRealloc(void *ptr, size_t size) {
 void *safeCalloc(size_t nmemb, size_t size) {
   void *ptr;
   if (!(ptr = calloc(nmemb, size))) {
-    perror("Memory allocation error");
+    perror("Memory allocation error.\n");
     exit(EXIT_FAILURE);
   }
   return ptr;

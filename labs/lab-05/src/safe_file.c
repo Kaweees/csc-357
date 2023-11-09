@@ -7,8 +7,6 @@
 
 #include "safe_mem.h"
 
-#define FILE_ERROR -1
-
 /**
  * A safe version of fopen that validates file opening and exits on failure
  * @param path the path to the file to open
@@ -18,7 +16,7 @@
 int safeOpen(char *filename, int flags, mode_t mode) {
   int fd;
   if ((fd = open(filename, flags, mode)) == FILE_ERROR) {
-    perror("Error opening file");
+    perror("Error opening file.\n");
     exit(EXIT_FAILURE);
   } else {
     return fd;
@@ -33,18 +31,18 @@ int safeOpen(char *filename, int flags, mode_t mode) {
 FileContent *safeRead(int fd) {
   struct stat file_info;
   if (fstat(fd, &file_info) == FILE_ERROR) {
-    perror("Error getting file information");
+    perror("Error getting file information.\n");
     close(fd);
     exit(EXIT_FAILURE);
   } else {
     FileContent *file_content =
-        (FileContent *)safe_calloc(sizeof(FileContent), 1);
+        (FileContent *)safeCalloc(sizeof(FileContent), 1);
     file_content->file_size = file_info.st_size;
-    file_content->file_contents = (unsigned char *)safe_calloc(
+    file_content->file_contents = (unsigned char *)safeCalloc(
         sizeof(unsigned char), file_content->file_size);
     if (read(fd, file_content->file_contents, file_content->file_size) ==
         FILE_ERROR) {
-      perror("Error reading file");
+      perror("Error reading file.\n");
       freeFileContent(file_content);
       close(fd);
       exit(EXIT_FAILURE);
@@ -62,7 +60,7 @@ FileContent *safeRead(int fd) {
  */
 void safeWrite(int fd, void *buf, size_t count) {
   if (write(fd, buf, count) == FILE_ERROR) {
-    perror("Error writing to file");
+    perror("Error writing to file.\n");
     exit(EXIT_FAILURE);
   }
 }
@@ -73,7 +71,7 @@ void safeWrite(int fd, void *buf, size_t count) {
  */
 void safeClose(int fd) {
   if (close(fd) == FILE_ERROR) {
-    perror("Error closing file");
+    perror("Error closing file.\n");
     exit(EXIT_FAILURE);
   }
 }
