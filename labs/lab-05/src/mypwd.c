@@ -10,9 +10,10 @@
 #include <unistd.h>
 
 #include "linked_list.h"
+#include "safe_alloc.h"
 #include "safe_dir.h"
 #include "safe_file.h"
-#include "safe_mem.h"
+
 
 void mypwd() {
   LinkedList* ll = createLinkedList();

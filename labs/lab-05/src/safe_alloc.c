@@ -1,4 +1,12 @@
-#include "safe_mem.h"
+/*
+ * safe_alloc.c - wrapper for allocator sycalls with an emphasis on safety and
+ simplicity
+ *
+ * All of the memory allocation-related syscalls are wrapped in a way that
+ emphasizes safety and simplicity. The results of every syscall are validated
+ for intended behavior upon execution.
+ */
+#include "safe_alloc.h"
 
 #include <fcntl.h>
 #include <stdio.h>

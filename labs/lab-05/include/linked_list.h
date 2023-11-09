@@ -29,4 +29,4 @@ LinkedList* createLinkedList();
 void insertNode(LinkedList* lls, Node* node);
 Node* removeFirstNode(LinkedList* lls);
 
-#endif
+#endif /* LINKED_LIST_H */

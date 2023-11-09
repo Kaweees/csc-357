@@ -1,3 +1,11 @@
+/*
+ * safe_dir.c - wrapper for directory sycalls with an emphasis on safety and
+ simplicity
+ *
+ * All of the directory-related syscalls are wrapped in a way that
+ emphasizes safety and simplicity. The results of every syscall are validated
+ for intended behavior upon execution.
+ */
 #include "safe_dir.h"
 
 #include <dirent.h>
@@ -9,7 +17,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "safe_mem.h"
+#include "safe_alloc.h"
 
 /**
  * A safe version of opendir that validates the directory stream and exits on

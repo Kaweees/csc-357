@@ -2,7 +2,7 @@
 
 #include <sys/types.h>
 
-#include "safe_mem.h"
+#include "safe_alloc.h"
 
 /**
  * Creates a Node

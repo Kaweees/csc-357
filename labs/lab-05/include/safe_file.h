@@ -25,4 +25,5 @@ FileContent *safeRead(int fd);
 void safeWrite(int fd, void *buf, size_t count);
 void safeClose(int fd);
 void freeFileContent(FileContent *file_contents);
-#endif
+
+#endif /* SAFE_FILE_H */

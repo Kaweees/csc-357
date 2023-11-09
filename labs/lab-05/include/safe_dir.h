@@ -36,4 +36,4 @@ void safeLstat(char *path, struct stat *buf);
 void safeChdir(char *path);
 void freeDirContent(DirContent *dir_contents);
 
-#endif
+#endif /* SAFE_DIR_H */
