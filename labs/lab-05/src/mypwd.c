@@ -23,10 +23,14 @@ void mypwd() {
     safeLstat(".", cwd_stat);
     safeChdir("..");
     safeLstat(".", par_stat);
-    Node* node = createNode(cwd_stat);
-    insertNode(ll, node);
-  } while (!(cwd_stat->st_dev == par_stat->st_dev &&
-             cwd_stat->st_ino == par_stat->st_ino));
+    if (cwd_stat->st_dev == par_stat->st_dev &&
+        cwd_stat->st_ino == par_stat->st_ino) {
+      break;
+    } else {
+      Node* node = createNode(cwd_stat->st_dev, cwd_stat->st_ino);
+      insertNode(ll, node);
+    }
+  } while (1);
   while (ll->size > 0) {
     Node* node = removeFirstNode(ll);
     DIR* cwd = safeOpenDir(".");
@@ -35,19 +39,22 @@ void mypwd() {
       struct dirent* cwd_entry = cwd_contents->entries[i];
       struct stat* stat = safeMalloc(sizeof(struct stat));
       safeLstat(cwd_entry->d_name, stat);
-      if (node->data->st_ino == stat->st_ino &&
-          node->data->st_dev == stat->st_dev) {
+      if (node->ino == stat->st_ino && node->dev == stat->st_dev) {
         strcat(dir_path, "/");
         strcat(dir_path, cwd_entry->d_name);
         safeChdir(cwd_entry->d_name);
+        safeFree(stat);
         break;
       }
       safeFree(stat);
     }
+    freeDirContent(cwd_contents);
     safeFree(node);
     safeCloseDir(cwd);
   }
   printf("%s\n", dir_path);
+  safeFree(dir_path);
+  safeFree(ll);
   safeFree(cwd_stat);
   safeFree(par_stat);
 }

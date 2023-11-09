@@ -8,8 +8,10 @@ typedef struct LinkedList LinkedList;
 
 /* Represents a node in a linked list */
 struct Node {
-  /* The data stored by the node */
-  struct stat* data;
+  /* The device ID of the file */
+  dev_t dev;
+  /* The inode number of the file */
+  ino_t ino;
   /* The next node in the linked list */
   Node* next;
 };
@@ -22,7 +24,7 @@ struct LinkedList {
   ssize_t size;
 };
 
-Node* createNode(struct stat* data);
+Node* createNode(dev_t dev, ino_t ino);
 LinkedList* createLinkedList();
 void insertNode(LinkedList* lls, Node* node);
 Node* removeFirstNode(LinkedList* lls);

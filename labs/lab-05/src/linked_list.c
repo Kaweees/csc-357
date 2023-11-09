@@ -9,9 +9,10 @@
  *
  * @return a pointer to the node
  */
-Node* createNode(struct stat* data) {
+Node* createNode(dev_t dev, ino_t ino) {
   Node* node = (Node*)safeMalloc(sizeof(Node));
-  node->data = data;
+  node->dev = dev;
+  node->ino = ino;
   node->next = NULL;
   return node;
 }

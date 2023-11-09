@@ -92,14 +92,14 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 test: $(TARGET)
 	@echo "Testing $(BINS)..."
 	@echo "Testing memory leaks..."
-	$(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS) $(TEST_INPUT)
+	$(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS)
 	@echo "Comparing output to $(REF_EXE):"
-	diff <($(BINS) $(TEST_INPUT)) <($(REF_EXE) $(TEST_INPUT))
+	diff $(BINS) $(REF_EXE)
 
 # Clean target: remove build artifacts and non-essential files
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
-	rm $(HENCODE_OUTPUT) $(HDECODE_OUTPUT)
+	rm -rf $(BUILD_DIR)
 
 # Debug target: use a debugger to debug the program
 debug: $(BINS)	
