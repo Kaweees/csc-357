@@ -14,7 +14,6 @@
 #include "safe_dir.h"
 #include "safe_file.h"
 
-
 void mypwd() {
   LinkedList* ll = createLinkedList();
   char* dir_path = safeCalloc(PATH_MAX, sizeof(char));
@@ -32,11 +31,16 @@ void mypwd() {
       insertNode(ll, node);
     }
   } while (1);
+  if (ll->size == 0) {
+    strcat(dir_path, "/");
+  } else {
+  }
   while (ll->size > 0) {
     Node* node = removeFirstNode(ll);
     DIR* cwd = safeOpenDir(".");
     DirContent* cwd_contents = safeReadDir(cwd);
-    for (size_t i = 0; i < cwd_contents->num_entries; i++) {
+    size_t i;
+    for (i = 0; i < cwd_contents->num_entries; i++) {
       struct dirent* cwd_entry = cwd_contents->entries[i];
       struct stat* stat = safeMalloc(sizeof(struct stat));
       safeLstat(cwd_entry->d_name, stat);
