@@ -1,7 +1,7 @@
-#include <stdlib.h>
-#include <unistd.h>
 #include <bits/types.h>
+#include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifndef FILE_ERROR
 #define FILE_ERROR -1
