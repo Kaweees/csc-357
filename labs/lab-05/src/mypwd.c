@@ -13,14 +13,12 @@
 #include "safe_mem.h"
 
 void mypwd() {
-  struct stat* cwd_stat;
-  struct stat* par_stat;
-  safeLstat(".", cwd_stat);
+  struct stat* cwd_stat = (struct stat*)safeCalloc(1, sizeof(struct stat));
+  struct stat* par_stat = (struct stat*)safeCalloc(1, sizeof(struct stat));
   do {
-    cwd_stat = safeMalloc(sizeof(struct stat));
     safeLstat(".", cwd_stat);
     safeChdir("..");
-    par_stat = safeMalloc(sizeof(struct stat));
+
     safeLstat(".", par_stat);
   } while (!(cwd_stat->st_dev == par_stat->st_dev &&
              cwd_stat->st_ino == par_stat->st_ino));
