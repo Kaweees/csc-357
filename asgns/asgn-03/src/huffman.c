@@ -1,5 +1,3 @@
-#include "huffman.h"
-
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <stddef.h>
@@ -10,6 +8,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "linked_list.h"
 #include "safe_file.h"
 #include "safe_mem.h"
 

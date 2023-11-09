@@ -51,15 +51,11 @@ DirContent *safeReadDir(DIR *dir) {
   dir_contents->num_entries = 0;
   struct dirent *entry;
   while ((entry = readdir(dir)) != NULL) {
-    /* Skip hidden files */
-    if (entry->d_name[0] != '.') {
-      dir_contents->entries =
-          (struct dirent **)safeRealloc(dir_contents->entries,
-              (dir_contents->num_entries + 1) * sizeof(struct dirent *));
+    dir_contents->entries = (struct dirent **)safeRealloc(dir_contents->entries,
+        (dir_contents->num_entries + 1) * sizeof(struct dirent *));
 
-      dir_contents->entries[dir_contents->num_entries] = entry;
-      dir_contents->num_entries++;
-    }
+    dir_contents->entries[dir_contents->num_entries] = entry;
+    dir_contents->num_entries++;
   }
   return dir_contents;
 }

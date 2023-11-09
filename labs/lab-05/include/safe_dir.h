@@ -1,6 +1,7 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -11,20 +12,20 @@
 #define PATH_MAX 2048 /* Maximum number of characters in a path name */
 #endif
 
-#ifndef DIR_ERROR
-#define DIR_ERROR -1
-#endif
-
 #ifndef SAFE_DIR_H
 #define SAFE_DIR_H
 
+#define DIR_ERROR -1
+
+typedef struct DirContent DirContent;
+
 /* Represents the contents of a directory */
-typedef struct DirContent {
+struct DirContent {
   /* The number of entries in the directory */
   ssize_t num_entries;
   /* The pointer to the directory entries */
   struct dirent **entries;
-} DirContent;
+};
 
 DIR *safeOpenDir(const char *path);
 DirContent *safeReadDir(DIR *dir);
