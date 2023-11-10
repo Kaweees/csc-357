@@ -1,6 +1,10 @@
 #ifndef TAR_H
 #define TAR_H
 
+/* Begin typedef declarations */
+typedef enum FileType FileType;
+typedef struct USTARHeader USTARHeader;
+
 /* Represents the type of a file in a tar archive */
 enum FileType {
   REGULAR_FILE = '0',
@@ -8,8 +12,6 @@ enum FileType {
   SYMBOLIC_LINK = '2',
   DIRECTORY = '5'
 };
-typedef enum FileType FileType;
-typedef struct USTARHeader USTARHeader;
 
 /* Represents a header of the POSIX-specified USTAR archive format */
 struct USTARHeader {
@@ -28,7 +30,7 @@ struct USTARHeader {
   /* Checksum portion of the header */
   char chksum[8];
   /* File type portion of the header */
-  enum FileType typeflag;
+  FileType typeflag;
   /* Link name portion of the header */
   char linkname[100];
   /* Magic number portion of the header */
@@ -47,8 +49,9 @@ struct USTARHeader {
   char prefix[155];
 };
 
+/* Begin function prototype declarations */
 void create_archive(char *archive_name, int file_count, char *file_names[],
     int verbose, int strict);
 void list_archive(char *archive_name, int verbose, int strict);
 void extract_archive(char *archive_name, int verbose, int strict);
-#endif
+#endif /* TAR_H */
