@@ -1,9 +1,9 @@
-#include "mytar.h"
-
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include "tar.h"
 
 #define OUT_OF_OPTIONS -1
 
