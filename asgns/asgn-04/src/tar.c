@@ -1,5 +1,11 @@
 #include "tar.h"
 
+#include <fcntl.h>
+
+#include "safe_alloc.h"
+#include "safe_dir.h"
+#include "safe_file.h"
+
 /**
  * Creates a tar archive
  *
@@ -12,7 +18,10 @@
  to the POSIX-specified USTAR archive format
  */
 void create_archive(char *archive_name, int file_count, char *file_names[],
-    int verbose, int strict) {}
+    int verbose, int strict) {
+  int outfile = safeOpen(archive_name, (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
+  safeClose(outfile);
+}
 
 /**
  * Lists the contents of a tar archive
