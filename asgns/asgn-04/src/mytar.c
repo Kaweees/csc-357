@@ -5,8 +5,6 @@
 
 #include "tar.h"
 
-#define OUT_OF_OPTIONS -1
-
 /**
  * Prints the proper usage of the program and exits unsuccessfully.
  */
@@ -16,26 +14,27 @@ void usage() {
 }
 
 int main(int argc, char *argv[]) {
-  int opt, create, list, extract, verbose, strict = 0;
+  enum TarOptions opt;
+  int create, list, extract, verbose, strict = 0;
   char *archive_name = NULL;
   while ((opt = getopt(argc, argv, "ctxvf:S")) != OUT_OF_OPTIONS) {
     switch (opt) {
-      case 'c':
+      case CREATE_ARCHIVE:
         create = 1;
         break;
-      case 't':
+      case LIST_CONTENTS:
         list = 1;
         break;
-      case 'x':
+      case EXTRACT_CONTENTS:
         extract = 1;
         break;
-      case 'v':
+      case VERBOSE_OUTPUT:
         verbose = 1;
         break;
-      case 'f':
+      case SPECIFY_ARCHIVE_NAME:
         archive_name = optarg;
         break;
-      case 'S':
+      case STRICT_FORMAT:
         strict = 1;
         break;
       default:

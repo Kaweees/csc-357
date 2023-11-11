@@ -1,9 +1,22 @@
 #ifndef TAR_H
 #define TAR_H
 
+#define OUT_OF_OPTIONS -1
+
 /* Begin typedef declarations */
+typedef enum TarOptions TarOptions;
 typedef enum FileType FileType;
 typedef struct USTARHeader USTARHeader;
+
+/* Represents the options that can be passed to the program */
+enum TarOptions {
+  CREATE_ARCHIVE = 'c',
+  LIST_CONTENTS = 't',
+  EXTRACT_CONTENTS = 'x',
+  VERBOSE_OUTPUT = 'v',
+  SPECIFY_ARCHIVE_NAME = 'f',
+  STRICT_FORMAT = 'S',
+};
 
 /* Represents the type of a file in a tar archive */
 enum FileType {
