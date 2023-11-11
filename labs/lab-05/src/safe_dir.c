@@ -111,7 +111,7 @@ void safeStat(char *path, struct stat *buf) {
  */
 void safeLstat(char *path, struct stat *buf) {
   if (lstat(path, buf) == DIR_ERROR) {
-    fprintf(stderr, "Failed to stat file.\n");
+    fprintf(stderr, "cannot get current directory.\n");
     perror("mypwd");
     exit(EXIT_FAILURE);
   }

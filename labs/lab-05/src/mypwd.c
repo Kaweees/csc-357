@@ -40,52 +40,25 @@ void mypwd() {
       DIR* cwd = safeOpenDir(".");
       DirContent* cwd_contents = safeReadDir(cwd);
       size_t i;
-      int found = 0;
       for (i = 0; i < cwd_contents->num_entries; i++) {
         struct dirent* cwd_entry = cwd_contents->entries[i];
         struct stat* stat = safeMalloc(sizeof(struct stat));
         safeLstat(cwd_entry->d_name, stat);
         if (node->ino == stat->st_ino && node->dev == stat->st_dev) {
           if (strlen(dir_path) + strlen(cwd_entry->d_name) > PATH_MAX) {
-            safeFree(node);
-            while (ll->size > 0) {
-              Node* node = removeFirstNode(ll);
-              safeFree(node);
-            }
-            safeFree(cwd_contents);
-            safeFree(dir_path);
-            safeFree(ll);
-            safeFree(cwd_stat);
-            safeFree(par_stat);
             fprintf(stderr, "path too long");
             perror("mypwd");
             exit(EXIT_FAILURE);
-          } 
+          } else {
             strcat(dir_path, "/");
             strcat(dir_path, cwd_entry->d_name);
             safeChdir(cwd_entry->d_name);
             safeFree(stat);
-            found = 1;
-            break;          
+            break;
+          }
         }
         safeFree(stat);
-        if (!(found)) {
-          safeFree(node);
-          while (ll->size > 0) {
-            Node* node = removeFirstNode(ll);
-            safeFree(node);
-          }
-          safeFree(cwd_contents);
-          safeFree(dir_path);
-          safeFree(ll);
-          safeFree(cwd_stat);
-          safeFree(par_stat);
-          fprintf(stderr, "cannot get current directory");
-          perror("mypwd");
-          exit(EXIT_FAILURE);
-        }
       }
-      freeDirContent(cwd_contents);
       safeFree(cwd_contents);
       safeFree(node);
       safeCloseDir(cwd);
