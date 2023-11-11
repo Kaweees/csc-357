@@ -1,5 +1,15 @@
 Miguel Villa Floran (mavillaf)
 
-Run `make`. `Make help` should help enlighten you on the commands available to you. 
+Run `make help`, and it should help enlighten you on the commands available to you. 
+
+Added the following makefile commands:
+- handin
+- latedays
+- testcases
+
+Honestly, I really like this. I feel like an engineer/scientist, designing and creating improvements to my the foundations of my codebase. Its really paying off, 
+
+
+I spent 
 
 I humbly ask that you be lienent with grading my code if it is not up to par with the coding standards, I'm still learning :)

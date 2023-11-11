@@ -32,13 +32,16 @@ DIR *safeOpenDir(const char *path) {
   if ((dir = opendir(path)) == NULL) {
     if (errno == ENOENT) {
       /* Directory does not exist. */
-      perror("Directory does not exist.\n");
+      fprintf(stderr, "Directory does not exist.\n");
+      perror("mypwd");
     } else if (errno == EACCES) {
       /* Insufficient permissions. */
-      perror("Permission denied.\n");
+      fprintf(stderr, "Permission denied.\n");
+      perror("mypwd");
     } else {
       /* Failed for some other reason */
-      perror("Failed to open directory.\n");
+      fprintf(stderr, "Failed to open directory.\n");
+      perror("mypwd");
     }
     exit(EXIT_FAILURE);
   } else {
@@ -93,7 +96,8 @@ void safeCloseDir(DIR *dir) { closedir(dir); }
  */
 void safeStat(char *path, struct stat *buf) {
   if (stat(path, buf) == DIR_ERROR) {
-    perror("Failed to stat file.\n");
+    fprintf(stderr, "Failed to stat file.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   }
 }
@@ -107,7 +111,8 @@ void safeStat(char *path, struct stat *buf) {
  */
 void safeLstat(char *path, struct stat *buf) {
   if (lstat(path, buf) == DIR_ERROR) {
-    perror("Failed to stat file.\n");
+    fprintf(stderr, "Failed to stat file.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   }
 }
@@ -120,7 +125,8 @@ void safeLstat(char *path, struct stat *buf) {
  */
 void safeChdir(char *path) {
   if (chdir(path) == DIR_ERROR) {
-    perror("Failed to change directory.\n");
+    fprintf(stderr, "Failed to change directory.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   }
 }

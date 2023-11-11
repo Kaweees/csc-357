@@ -22,7 +22,8 @@
 void *safeMalloc(size_t size) {
   void *ptr;
   if (!(ptr = malloc(size))) {
-    perror("Memory allocation error.\n");
+    fprintf(stderr, "Memory allocation error.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   }
   return ptr;
@@ -37,7 +38,8 @@ void *safeMalloc(size_t size) {
  */
 void *safeRealloc(void *ptr, size_t size) {
   if (!(ptr = realloc(ptr, size))) {
-    perror("Memory allocation error.\n");
+    fprintf(stderr, "Memory allocation error.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   }
   return ptr;
@@ -53,7 +55,8 @@ void *safeRealloc(void *ptr, size_t size) {
 void *safeCalloc(size_t nmemb, size_t size) {
   void *ptr;
   if (!(ptr = calloc(nmemb, size))) {
-    perror("Memory allocation error.\n");
+    fprintf(stderr, "Memory allocation error.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   }
   return ptr;

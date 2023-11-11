@@ -24,7 +24,8 @@
 int safeOpen(char *filename, int flags, mode_t mode) {
   int fd;
   if ((fd = open(filename, flags, mode)) == FILE_ERROR) {
-    perror("Error opening file.\n");
+    fprintf(stderr, "Error opening file.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   } else {
     return fd;
@@ -39,7 +40,8 @@ int safeOpen(char *filename, int flags, mode_t mode) {
 FileContent *safeRead(int fd) {
   struct stat file_info;
   if (fstat(fd, &file_info) == FILE_ERROR) {
-    perror("Error getting file information.\n");
+    fprintf(stderr, "Error getting file information.\n");
+    perror("mypwd");
     close(fd);
     exit(EXIT_FAILURE);
   } else {
@@ -50,7 +52,8 @@ FileContent *safeRead(int fd) {
         sizeof(unsigned char), file_content->file_size);
     if (read(fd, file_content->file_contents, file_content->file_size) ==
         FILE_ERROR) {
-      perror("Error reading file.\n");
+      fprintf(stderr, "Error reading file.\n");
+      perror("mypwd");
       freeFileContent(file_content);
       close(fd);
       exit(EXIT_FAILURE);
@@ -68,7 +71,8 @@ FileContent *safeRead(int fd) {
  */
 void safeWrite(int fd, void *buf, size_t count) {
   if (write(fd, buf, count) == FILE_ERROR) {
-    perror("Error writing to file.\n");
+    fprintf(stderr, "Error writing to file.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   }
 }
@@ -79,7 +83,8 @@ void safeWrite(int fd, void *buf, size_t count) {
  */
 void safeClose(int fd) {
   if (close(fd) == FILE_ERROR) {
-    perror("Error closing file.\n");
+    fprintf(stderr, "Error closing file.\n");
+    perror("mypwd");
     exit(EXIT_FAILURE);
   }
 }
