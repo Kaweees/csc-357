@@ -1,33 +1,37 @@
 #ifndef TAR_H
 #define TAR_H
 
+#define UNIMPLEMENTED                                                         \
+  do {                                                                        \
+    fprintf(stderr, "%s:%d: %s is not implemented yet\n", __FILE__, __LINE__, \
+        __func__);                                                            \
+    abort();                                                                  \
+  } while (0)
+
 #define OUT_OF_OPTIONS -1
 
 /* Begin typedef declarations */
-typedef enum TarOptions TarOptions;
-typedef enum FileType FileType;
-typedef struct USTARHeader USTARHeader;
 
 /* Represents the options that can be passed to the program */
-enum TarOptions {
+typedef enum TarOptions {
   CREATE_ARCHIVE = 'c',
   LIST_CONTENTS = 't',
   EXTRACT_CONTENTS = 'x',
   VERBOSE_OUTPUT = 'v',
   SPECIFY_ARCHIVE_NAME = 'f',
   STRICT_FORMAT = 'S',
-};
+} TarOptions;
 
 /* Represents the type of a file in a tar archive */
-enum FileType {
+typedef enum FileType {
   REGULAR_FILE = '0',
   REGULAR_FILE_ALTERNATE = '\0',
   SYMBOLIC_LINK = '2',
   DIRECTORY = '5'
-};
+} FileType;
 
 /* Represents a header of the POSIX-specified USTAR archive format */
-struct USTARHeader {
+typedef struct USTARHeader {
   /* File name portion of the header */
   char name[100];
   /* File modes portion of the header */
@@ -60,7 +64,7 @@ struct USTARHeader {
   char devminor[8];
   /* Prefix portion of the header */
   char prefix[155];
-};
+} USTARHeader;
 
 /* Begin function prototype declarations */
 void create_archive(char *archive_name, int file_count, char *file_names[],

@@ -10,15 +10,13 @@
 #ifndef SAFE_FILE_H
 #define SAFE_FILE_H
 
-typedef struct FileContent FileContent;
-
 /* Represents the contents of a file */
-struct FileContent {
+typedef struct FileContent {
   /* The length of the file contents in bytes */
   ssize_t file_size;
   /* The pointer to the file contents */
   unsigned char *file_contents;
-};
+} FileContent;
 
 int safeOpen(char *filename, int flags, mode_t mode);
 FileContent *safeRead(int fd);

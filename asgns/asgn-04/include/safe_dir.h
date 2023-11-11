@@ -17,15 +17,13 @@
 
 #define DIR_ERROR -1
 
-typedef struct DirContent DirContent;
-
 /* Represents the contents of a directory */
-struct DirContent {
+typedef struct DirContent {
   /* The number of entries in the directory */
   ssize_t num_entries;
   /* The pointer to the directory entries */
   struct dirent **entries;
-};
+} DirContent;
 
 DIR *safeOpenDir(const char *path);
 DirContent *safeReadDir(DIR *dir);

@@ -17,11 +17,11 @@ HANDIN_CLASS := pn-cs357
 # The compiler executable.
 CC := gcc
 # The compiler flags.
-CFLAGS := -Wall -g
+CFLAGS := -Wall -Wextra -Werror -std=c99 -pedantic -ggdb -g
 # The linker executable.
 LD := gcc
 # The linker flags.
-LDFLAGS := -Wall -g
+LDFLAGS := -Wall -Wextra -Werror -std=c99 -pedantic -ggdb -g
 # The shell executable.
 SHELL := /bin/bash
 
