@@ -17,11 +17,11 @@ HANDIN_CLASS := pn-cs357
 # The compiler executable.
 CC := gcc
 # The compiler flags.
-CFLAGS := -Wall -Wextra -Werror -std=c99 -pedantic -ggdb -g
+CFLAGS := -Wall -Wextra -Werror -std=gnu99 -pedantic -ggdb -g
 # The linker executable.
 LD := gcc
 # The linker flags.
-LDFLAGS := -Wall -Wextra -Werror -std=c99 -pedantic -ggdb -g
+LDFLAGS := -Wall -Wextra -Werror -std=gnu99 -pedantic -ggdb -g
 # The shell executable.
 SHELL := /bin/bash
 
@@ -39,11 +39,11 @@ DEBUGGER_FLAGS :=
 # The name of the test input file
 TEST_INPUT := test_input.txt
 # The name of the test output file
-TEST_OUTPUT := 
+TEST_OUTPUT := test_output.tar
 # The name of the reference executable
 REF_EXE := ~pn-cs357/demos/mytar
 # The name of the reference output file
-REF_OUTPUT := 
+REF_OUTPUT := ref_output.tar
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -90,11 +90,13 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Test target: build and test the program against sample input
 test: $(TARGET)
-	@echo "Testing $(BINS)..."
-	@echo "Testing memory leaks..."
-	$(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS)
-	@echo "Comparing output to $(REF_EXE):"
-	diff <($(BINS)) <($(REF_EXE))
+	$(BINS) -c -f $(TEST_OUTPUT) $(TEST_INPUT)
+
+# @echo "Testing $(BINS)..."
+# @echo "Testing memory leaks..."
+# $(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS)
+# @echo "Comparing output to $(REF_EXE):"
+# diff <($(BINS)) <($(REF_EXE))
 
 # Clean target: remove build artifacts and non-essential files
 clean:

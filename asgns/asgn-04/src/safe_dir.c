@@ -19,6 +19,7 @@
 
 #include "safe_alloc.h"
 
+
 /**
  * A safe version of opendir that validates the directory stream and exits on
  * failure
@@ -99,13 +100,27 @@ void safeStat(char *path, struct stat *buf) {
 }
 
 /**
+ * A safe version of fstat that validates the file status (symlinks are not followed)
+ * and exits on failure
+ *
+ * @param path The path to the file to stat.
+ * @param buf The buffer to store the file status in.
+ */
+void safeFstat(int filedes, struct stat *buf) {
+  if (fstat(filedes, buf) == DIR_ERROR) {
+    perror("Failed to stat file.\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
+/**
  * A safe version of lsat that validates the file status (symlinks aren't
  * followed) and exits on failure
  *
  * @param path The path to the file to stat.
  * @param buf The buffer to store the file status in.
  */
-void safeLstat(char *path, struct stat *buf) {
+void safeLstat(const char *path, struct stat *buf) {
   if (lstat(path, buf) == DIR_ERROR) {
     perror("Failed to stat file.\n");
     exit(EXIT_FAILURE);
@@ -143,7 +158,7 @@ void freeDirContent(DirContent *dir_contents) {
  * @param size The size of the buffer.
  * @return A pointer to the current working directory.
  */
-char *safeGetCwd(safeGetCwd *buf, size_t size) {
+char *safeGetCwd(char *buf, size_t size) {
   if (getcwd(buf, size) == NULL) {
     perror("Failed to get current working directory.\n");
     exit(EXIT_FAILURE);

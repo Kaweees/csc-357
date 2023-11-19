@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <bits/types.h>
+
 
 #include "safe_alloc.h"
 

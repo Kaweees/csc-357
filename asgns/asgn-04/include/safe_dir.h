@@ -8,7 +8,6 @@
 #include "limits.h"
 
 #ifndef PATH_MAX
-#define PATH_MAX
 #define PATH_MAX 2048 /* Maximum number of characters in a path name */
 #endif
 
@@ -30,8 +29,8 @@ DirContent *safeReadDir(DIR *dir);
 void safeRewindDir(DIR *dir);
 void safeCloseDir(DIR *dir);
 void safeStat(char *path, struct stat *buf);
-void safeLstat(char *path, struct stat *buf);
+void safeLstat(const char *path, struct stat *buf);
 void safeChdir(char *path);
 void freeDirContent(DirContent *dir_contents);
-char *safeGetCwd(safeGetCwd *buf, size_t size);
+char *safeGetCwd(char *buf, size_t size);
 #endif /* SAFE_DIR_H */

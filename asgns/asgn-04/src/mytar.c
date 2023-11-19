@@ -15,7 +15,7 @@ void usage() {
 
 int main(int argc, char *argv[]) {
   enum TarOptions opt;
-  int create, list, extract, verbose, strict = 0;
+  int create = 0, list = 0, extract = 0, verbose, strict = 0;
   char *archive_name = NULL;
   while ((opt = getopt(argc, argv, "ctxvf:S")) != OUT_OF_OPTIONS) {
     switch (opt) {
@@ -48,12 +48,13 @@ int main(int argc, char *argv[]) {
   }
 
   if (create) {
-    create_archive(archive_name, argc - optind, &argv[optind], verbose, strict);
-  } else if (list) {
-    list_archive(archive_name, verbose, strict);
-  } else if (extract) {
-    extract_archive(archive_name, verbose, strict);
-  }
+    createArchive(archive_name, argc - optind, &argv[optind], verbose, strict);
+  } 
+  // else if (list) {
+  //   listArchive(archive_name, verbose, strict);
+  // } else if (extract) {
+  //   extractArchive(archive_name, verbose, strict);
+  // }
 
   return EXIT_SUCCESS;
 }

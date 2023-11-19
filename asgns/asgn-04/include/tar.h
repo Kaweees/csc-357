@@ -8,7 +8,23 @@
     abort();                                                                  \
   } while (0)
 
-#define OUT_OF_OPTIONS -1
+#define ARCHIVE_BLOCK_SIZE    512 /* The size of an archive block */
+#define ARCHIVE_NAME_SIZE     100 /* File name portion of the header */
+#define ARCHIVE_MODE_SIZE     8   /* File modes portion of the header */
+#define ARCHIVE_UID_SIZE      8   /* User id portion of the header */
+#define ARCHIVE_GID_SIZE      8   /* Group id portion of the header */
+#define ARCHIVE_SIZE_SIZE     12  /* File size portion of the header */
+#define ARCHIVE_MTIME_SIZE    12  /* Modification time portion of the header */
+#define ARCHIVE_CHKSUM_SIZE   8   /* Checksum portion of the header */
+#define ARCHIVE_TYPEFLAG_SIZE 1   /* File type portion of the header */
+#define ARCHIVE_LINKNAME_SIZE 100 /* Link name portion of the header */
+#define ARCHIVE_MAGIC_SIZE    6   /* Magic number portion of the header */
+#define ARCHIVE_VERSION_SIZE  2   /* Version portion of the header */
+#define ARCHIVE_UNAME_SIZE    32  /* User name portion of the header */
+#define ARCHIVE_GNAME_SIZE    32  /* Group name portion of the header */
+#define ARCHIVE_DEVMAJOR_SIZE 8   /* Major device number portion of header */
+#define ARCHIVE_DEVMINOR_SIZE 8   /* Minor device number portion of header */
+#define ARCHIVE_PREFIX_SIZE   155 /* Prefix portion of the header */
 
 /* Begin typedef declarations */
 
@@ -20,6 +36,7 @@ typedef enum TarOptions {
   VERBOSE_OUTPUT = 'v',
   SPECIFY_ARCHIVE_NAME = 'f',
   STRICT_FORMAT = 'S',
+  OUT_OF_OPTIONS = -1
 } TarOptions;
 
 /* Represents the type of a file in a tar archive */
@@ -33,42 +50,42 @@ typedef enum FileType {
 /* Represents a header of the POSIX-specified USTAR archive format */
 typedef struct USTARHeader {
   /* File name portion of the header */
-  char name[100];
+  char name[ARCHIVE_NAME_SIZE];
   /* File modes portion of the header */
-  char mode[8];
+  char mode[ARCHIVE_MODE_SIZE];
   /* User id portion of the header */
-  char uid[8];
+  char uid[ARCHIVE_UID_SIZE];
   /* Group id portion of the header */
-  char gid[8];
+  char gid[ARCHIVE_GID_SIZE];
   /* File size portion of the header */
-  char size[12];
+  char size[ARCHIVE_SIZE_SIZE];
   /* Modification time portion of the header */
-  char mtime[12];
+  char mtime[ARCHIVE_MTIME_SIZE];
   /* Checksum portion of the header */
-  char chksum[8];
+  char chksum[ARCHIVE_CHKSUM_SIZE];
   /* File type portion of the header */
   FileType typeflag;
   /* Link name portion of the header */
-  char linkname[100];
+  char linkname[ARCHIVE_LINKNAME_SIZE];
   /* Magic number portion of the header */
-  char magic[6];
+  char magic[ARCHIVE_MAGIC_SIZE];
   /* Version portion of the header */
-  char version[2];
+  char version[ARCHIVE_VERSION_SIZE];
   /* User name portion of the header */
-  char uname[32];
+  char uname[ARCHIVE_UNAME_SIZE];
   /* Group name portion of the header */
-  char gname[32];
+  char gname[ARCHIVE_GNAME_SIZE];
   /* Major device number portion of header */
-  char devmajor[8];
+  char devmajor[ARCHIVE_DEVMAJOR_SIZE];
   /* Minor device number portion of header */
-  char devminor[8];
+  char devminor[ARCHIVE_DEVMINOR_SIZE];
   /* Prefix portion of the header */
-  char prefix[155];
+  char prefix[ARCHIVE_PREFIX_SIZE];
 } USTARHeader;
 
 /* Begin function prototype declarations */
-void create_archive(char *archive_name, int file_count, char *file_names[],
+void createArchive(char *archive_name, int file_count, char *file_names[],
     int verbose, int strict);
-void list_archive(char *archive_name, int verbose, int strict);
-void extract_archive(char *archive_name, int verbose, int strict);
+void listArchive(char *archive_name, int verbose, int strict);
+void extractArchive(char *archive_name, int verbose, int strict);
 #endif /* TAR_H */
