@@ -9,21 +9,62 @@
 #include "safe_dir.h"
 #include "safe_file.h"
 
-void createArchiveHelper(int outfile) {
-  for (int i = 0; i < cwd_contents->num_entries; i++) {
-    struct dirent* cwd_entry = cwd_contents->entries[i];
-    struct stat* stat = safeMalloc(sizeof(struct stat));
-    safeLstat(cwd_entry->d_name, stat);
-    // Get the length of the string
-    size_t inputLength = strlen(cwd_entry->d_name);
-    // Determine the number of bytes to write (maximum 100)
-    size_t bytesToWrite = (inputLength > ARCHIVE_NAME_SIZE) ? ARCHIVE_NAME_SIZE : inputLength;
-    // Write the string to the archive
-    safeWrite(outfile, cwd_entry->d_name, bytesToWrite);
-    // Write the padding to the archive
-    char padding[ARCHIVE_NAME_SIZE - bytesToWrite];
-    safeWrite(outfile, padding, ARCHIVE_NAME_SIZE - bytesToWrite);
-  }
+
+// char curr_dir[PATH_MAX];
+// safeGetCwd(curr_dir, PATH_MAX);
+
+void createArchiveHelper(int outfile, char* curr_path) {
+  struct stat* stat = safeMalloc(sizeof(struct stat));
+  safeLstat(curr_path, stat);
+  char * header_name = (char*) safeCalloc(sizeof(char), ARCHIVE_NAME_SIZE);
+  strncpy(header_name, curr_path, ARCHIVE_NAME_SIZE);
+  /* Write the string to the archive */
+  safeWrite(outfile, header_name, ARCHIVE_NAME_SIZE);
+  safeFree(header_name);
+  char * header_mode = (char*) safeCalloc(sizeof(char), ARCHIVE_MODE_SIZE);
+  snprintf(header_mode, ARCHIVE_MODE_SIZE, "%08o", stat->st_mode);
+  /* Write the mode to the archive */
+  safeWrite(outfile, header_mode, ARCHIVE_MODE_SIZE);
+  safeFree(header_mode);
+  char * header_uid = (char*) safeCalloc(sizeof(char), ARCHIVE_UID_SIZE);
+  snprintf(header_uid, ARCHIVE_UID_SIZE, "%08o", stat->st_uid);
+  /* Write the uid to the archive */
+  safeWrite(outfile, header_uid, ARCHIVE_UID_SIZE);
+  safeFree(header_uid);
+  char * header_gid = (char*) safeCalloc(sizeof(char), ARCHIVE_GID_SIZE);
+  snprintf(header_gid, ARCHIVE_GID_SIZE, "%08o", stat->st_gid);
+  /* Write the gid to the archive */
+  safeWrite(outfile, header_gid, ARCHIVE_GID_SIZE);
+  safeFree(header_gid);
+  char * header_size = (char*) safeCalloc(sizeof(char), ARCHIVE_SIZE_SIZE);
+  snprintf(header_size, ARCHIVE_SIZE_SIZE, "%012o", stat->st_size);
+  /* Write the size to the archive */
+  safeWrite(outfile, header_size, ARCHIVE_SIZE_SIZE);
+  safeFree(header_size);
+  char * header_mtime = (char*) safeCalloc(sizeof(char), ARCHIVE_MTIME_SIZE);
+  snprintf(header_mtime, ARCHIVE_MTIME_SIZE, "%012o", stat->st_mtime);
+  /* Write the mtime to the archive */
+  safeWrite(outfile, header_mtime, ARCHIVE_MTIME_SIZE);
+  safeFree(header_mtime);
+  char * header_chksum = (char*) safeCalloc(sizeof(char), ARCHIVE_CHKSUM_SIZE);
+  snprintf(header_chksum, ARCHIVE_CHKSUM_SIZE, "%08o", 0);
+  
+  
+
+  // for (int i = 0; i < cwd_contents->num_entries; i++) {
+  //   struct dirent* cwd_entry = cwd_contents->entries[i];
+  //   struct stat* stat = safeMalloc(sizeof(struct stat));
+  //   safeLstat(cwd_entry->d_name, stat);
+  //   // Get the length of the string
+  //   size_t inputLength = strlen(cwd_entry->d_name);
+  //   // Determine the number of bytes to write (maximum 100)
+  //   size_t bytesToWrite = (inputLength > ARCHIVE_NAME_SIZE) ? ARCHIVE_NAME_SIZE : inputLength;
+  //   // Write the string to the archive
+  //   safeWrite(outfile, cwd_entry->d_name, bytesToWrite);
+  //   // Write the padding to the archive
+  //   char padding[ARCHIVE_NAME_SIZE - bytesToWrite];
+  //   safeWrite(outfile, padding, ARCHIVE_NAME_SIZE - bytesToWrite);
+  // }
 
 
 
@@ -75,15 +116,11 @@ void createArchiveHelper(int outfile) {
  */
 void createArchive(char *archive_name, int file_count, char *file_names[],
     int verbose, int strict) {
-  char curr_dir[PATH_MAX];
-  safeGetCwd(curr_dir, PATH_MAX);
-  printf("archive_name: %s\n", archive_name);
   int outfile = safeOpen(archive_name, (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
-  printf("file_count: %d\n", file_count);
-  printf("file_names: %s\n", file_names[0]);
-  printf("verbose: %d\n", verbose);
-  printf("strict: %d\n", strict);
-  createArchiveHelper(outfile);
+  for (int i = 0; i < file_count; i++) {
+    printf("file_names: %s\n", file_names[i]);
+    createArchiveHelper(outfile, file_names[0]);
+  }
   safeClose(outfile);
 
   // for (int i = 0; i < file_count; i++) {
@@ -117,7 +154,6 @@ void createArchive(char *archive_name, int file_count, char *file_names[],
   //     memset(buf, 0, sizeof(buf));
   //     safeWrite(outfile, buf, sizeof(buf) - bytes_read);
   //   }
-  safeClose(outfile);
 }
 
 // /**
