@@ -21,9 +21,9 @@
 #define ARCHIVE_MAGIC_SIZE    6   /* Magic number portion of the header */
 #define ARCHIVE_MAGIC         "ustar" /* Magic number of the header */
 #define ARCHIVE_VERSION_SIZE  2       /* Version portion of the header */
-#define ARCHIVE_VERSION       "00" /* Version of the header */
-#define ARCHIVE_UNAME_SIZE    32  /* User name portion of the header */
-#define ARCHIVE_GNAME_SIZE    32  /* Group name portion of the header */
+#define ARCHIVE_VERSION       "00"    /* Version of the header */
+#define ARCHIVE_UNAME_SIZE    32      /* User name portion of the header */
+#define ARCHIVE_GNAME_SIZE    32      /* Group name portion of the header */
 #define ARCHIVE_DEVMAJOR_SIZE 8   /* Major device number portion of header */
 #define ARCHIVE_DEVMINOR_SIZE 8   /* Minor device number portion of header */
 #define ARCHIVE_PREFIX_SIZE   155 /* Prefix portion of the header */

@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
   if (create) {
     createArchive(archive_name, argc - optind, &argv[optind], verbose, strict);
-  } 
+  }
   // else if (list) {
   //   listArchive(archive_name, verbose, strict);
   // } else if (extract) {

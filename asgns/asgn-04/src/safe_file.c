@@ -8,12 +8,11 @@
  */
 #include "safe_file.h"
 
+#include <bits/types.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <bits/types.h>
-
 
 #include "safe_alloc.h"
 

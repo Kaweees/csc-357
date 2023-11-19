@@ -19,7 +19,6 @@
 
 #include "safe_alloc.h"
 
-
 /**
  * A safe version of opendir that validates the directory stream and exits on
  * failure
@@ -100,8 +99,8 @@ void safeStat(char *path, struct stat *buf) {
 }
 
 /**
- * A safe version of fstat that validates the file status (symlinks are not followed)
- * and exits on failure
+ * A safe version of fstat that validates the file status (symlinks are not
+ * followed) and exits on failure
  *
  * @param path The path to the file to stat.
  * @param buf The buffer to store the file status in.
