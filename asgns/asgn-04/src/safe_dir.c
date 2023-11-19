@@ -134,3 +134,20 @@ void freeDirContent(DirContent *dir_contents) {
   safeFree(dir_contents->entries);
   safeFree(dir_contents);
 }
+
+/**
+ * A safe version of getcwd that validates the current working directory and
+ * exits on failsure
+ *
+ * @param buf The buffer to store the current working directory in.
+ * @param size The size of the buffer.
+ * @return A pointer to the current working directory.
+ */
+char *safeGetCwd(safeGetCwd *buf, size_t size) {
+  if (getcwd(buf, size) == NULL) {
+    perror("Failed to get current working directory.\n");
+    exit(EXIT_FAILURE);
+  } else {
+    return buf;
+  }
+}

@@ -6,6 +6,8 @@
 #include "safe_dir.h"
 #include "safe_file.h"
 
+// void create_archive
+
 /**
  * Creates a tar archive
  *
@@ -19,7 +21,10 @@
  */
 void create_archive(char *archive_name, int file_count, char *file_names[],
     int verbose, int strict) {
+  char curr_dir[PATH_MAX];
+  safeGetCwd(cwd, PATH_MAX);
   int outfile = safeOpen(archive_name, (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
+
   // for (int i = 0; i < file_count; i++) {
   //   int infile = safeOpen(file_names[i], O_RDONLY, 0);
   //   struct stat stat_buf;
