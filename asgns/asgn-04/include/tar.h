@@ -19,7 +19,9 @@
 #define ARCHIVE_TYPEFLAG_SIZE 1   /* File type portion of the header */
 #define ARCHIVE_LINKNAME_SIZE 100 /* Link name portion of the header */
 #define ARCHIVE_MAGIC_SIZE    6   /* Magic number portion of the header */
-#define ARCHIVE_VERSION_SIZE  2   /* Version portion of the header */
+#define ARCHIVE_MAGIC         "ustar" /* Magic number of the header */
+#define ARCHIVE_VERSION_SIZE  2       /* Version portion of the header */
+#define ARCHIVE_VERSION       "00" /* Version of the header */
 #define ARCHIVE_UNAME_SIZE    32  /* User name portion of the header */
 #define ARCHIVE_GNAME_SIZE    32  /* Group name portion of the header */
 #define ARCHIVE_DEVMAJOR_SIZE 8   /* Major device number portion of header */
