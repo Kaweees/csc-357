@@ -30,8 +30,8 @@
 
 #define PERMISSIONS_WIDTH 10
 #define OWNER_GROUP_WIDTH 17
-#define SIZE_WIDTH 8
-#define MTIME_WIDTH 16
+#define SIZE_WIDTH        8
+#define MTIME_WIDTH       16
 /* Begin typedef declarations */
 
 /* Represents the options that can be passed to the program */

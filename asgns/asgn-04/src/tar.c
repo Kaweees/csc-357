@@ -2,18 +2,19 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <grp.h>
+#include <pwd.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <pwd.h>
-#include <grp.h>
 
 #include "safe_alloc.h"
 #include "safe_dir.h"
 #include "safe_file.h"
 
-void createArchiveHelper(int outfile, char* curr_path, int verbose, int strict) {
+void createArchiveHelper(
+    int outfile, char* curr_path, int verbose, int strict) {
   printf("strict: %d\n", strict);
   uint8_t checksum = 0;
   /* Get the stat of the file/directory */
@@ -37,11 +38,13 @@ void createArchiveHelper(int outfile, char* curr_path, int verbose, int strict) 
   checksum += strlen(header_gid);
   /* Store the size in a string */
   char* header_size = (char*)safeCalloc(sizeof(char), ARCHIVE_SIZE_SIZE + 1);
-  snprintf(header_size, ARCHIVE_SIZE_SIZE + 1, "%012o", (unsigned int) stat->st_size);
+  snprintf(
+      header_size, ARCHIVE_SIZE_SIZE + 1, "%012o", (unsigned int)stat->st_size);
   checksum += strlen(header_size);
   /* Store the mtime in a string */
   char* header_mtime = (char*)safeCalloc(sizeof(char), ARCHIVE_MTIME_SIZE + 1);
-  snprintf(header_mtime, ARCHIVE_MTIME_SIZE + 1, "%012o", (unsigned int) stat->st_mtime);
+  snprintf(header_mtime, ARCHIVE_MTIME_SIZE + 1, "%012o",
+      (unsigned int)stat->st_mtime);
   checksum += strlen(header_mtime);
   /* Store the typeflag in a string */
   FileType header_typeflag;
@@ -64,7 +67,8 @@ void createArchiveHelper(int outfile, char* curr_path, int verbose, int strict) 
   char* header_magic = (char*)safeCalloc(sizeof(char), ARCHIVE_MAGIC_SIZE + 1);
   snprintf(header_magic, ARCHIVE_MAGIC_SIZE + 1, "%s", ARCHIVE_MAGIC);
   checksum += strlen(header_magic);
-  char* header_version = (char*)safeCalloc(sizeof(char), ARCHIVE_VERSION_SIZE + 1);
+  char* header_version =
+      (char*)safeCalloc(sizeof(char), ARCHIVE_VERSION_SIZE + 1);
   snprintf(header_version, ARCHIVE_VERSION_SIZE + 1, "%s", ARCHIVE_VERSION);
   checksum += strlen(header_version);
   char* header_uname = (char*)safeCalloc(sizeof(char), ARCHIVE_UNAME_SIZE);
@@ -85,7 +89,8 @@ void createArchiveHelper(int outfile, char* curr_path, int verbose, int strict) 
   snprintf(header_prefix, ARCHIVE_PREFIX_SIZE, "%s", "");
   checksum += strlen(header_prefix);
   /* Store the chksum in a string */
-  char* header_chksum = (char*)safeCalloc(sizeof(char), ARCHIVE_CHKSUM_SIZE + 1);
+  char* header_chksum =
+      (char*)safeCalloc(sizeof(char), ARCHIVE_CHKSUM_SIZE + 1);
   checksum += ARCHIVE_CHKSUM_SIZE;
   snprintf(header_chksum, ARCHIVE_CHKSUM_SIZE + 1, "%08o", 0);
   /* Write the string to the archive */
@@ -135,26 +140,30 @@ void createArchiveHelper(int outfile, char* curr_path, int verbose, int strict) 
   /* Write the prefix to the archive */
   safeWrite(outfile, header_prefix, ARCHIVE_PREFIX_SIZE);
   safeFree(header_prefix);
-  /* print out file permissions, the owner/group, the size, last modification time and the filename*/
+  /* print out file permissions, the owner/group, the size, last modification
+   * time and the filename*/
   if (verbose) {
-    struct passwd *pwd = getpwuid(stat->st_uid);
-    struct group *grp = getgrgid(stat->st_gid);
+    struct passwd* pwd = getpwuid(stat->st_uid);
+    struct group* grp = getgrgid(stat->st_gid);
     char time_str[MTIME_WIDTH + 1] = {0};
     char owner_group[OWNER_GROUP_WIDTH + 1];
-    snprintf(owner_group, OWNER_GROUP_WIDTH + 1, "%s/%s", pwd->pw_name, grp->gr_name);
-    strftime(time_str, MTIME_WIDTH + 1, "%Y-%m-%d %H:%M", localtime(&stat->st_mtime));
+    snprintf(owner_group, OWNER_GROUP_WIDTH + 1, "%s/%s", pwd->pw_name,
+        grp->gr_name);
+    strftime(time_str, MTIME_WIDTH + 1, "%Y-%m-%d %H:%M",
+        localtime(&stat->st_mtime));
     printf("%c%c%c%c%c%c%c%c%c%c ",
-      (S_ISDIR(stat->st_mode)) ? 'd' : (S_ISLNK(stat->st_mode)) ? 'l' : '-',
-      (stat->st_mode & S_IRUSR) ? 'r' : '-',
-      (stat->st_mode & S_IWUSR) ? 'w' : '-',
-      (stat->st_mode & S_IXUSR) ? 'x' : '-',
-      (stat->st_mode & S_IRGRP) ? 'r' : '-',
-      (stat->st_mode & S_IWGRP) ? 'w' : '-',
-      (stat->st_mode & S_IXGRP) ? 'x' : '-',
-      (stat->st_mode & S_IROTH) ? 'r' : '-',
-      (stat->st_mode & S_IWOTH) ? 'w' : '-',
-      (stat->st_mode & S_IXOTH) ? 'x' : '-'
-    );
+        (S_ISDIR(stat->st_mode))   ? 'd'
+        : (S_ISLNK(stat->st_mode)) ? 'l'
+                                   : '-',
+        (stat->st_mode & S_IRUSR) ? 'r' : '-',
+        (stat->st_mode & S_IWUSR) ? 'w' : '-',
+        (stat->st_mode & S_IXUSR) ? 'x' : '-',
+        (stat->st_mode & S_IRGRP) ? 'r' : '-',
+        (stat->st_mode & S_IWGRP) ? 'w' : '-',
+        (stat->st_mode & S_IXGRP) ? 'x' : '-',
+        (stat->st_mode & S_IROTH) ? 'r' : '-',
+        (stat->st_mode & S_IWOTH) ? 'w' : '-',
+        (stat->st_mode & S_IXOTH) ? 'x' : '-');
     printf("%-*s", OWNER_GROUP_WIDTH, owner_group);
     printf(" %*lu", SIZE_WIDTH, (unsigned long)stat->st_size);
     printf(" %-*s", MTIME_WIDTH, time_str);
