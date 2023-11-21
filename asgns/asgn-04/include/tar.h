@@ -28,6 +28,10 @@
 #define ARCHIVE_DEVMINOR_SIZE 8   /* Minor device number portion of header */
 #define ARCHIVE_PREFIX_SIZE   155 /* Prefix portion of the header */
 
+#define PERMISSIONS_WIDTH 10
+#define OWNER_GROUP_WIDTH 17
+#define SIZE_WIDTH 8
+#define MTIME_WIDTH 16
 /* Begin typedef declarations */
 
 /* Represents the options that can be passed to the program */
