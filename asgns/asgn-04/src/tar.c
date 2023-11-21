@@ -19,11 +19,11 @@ void handleFileContents(int outfile, char* curr_path, int verbose, int strict) {
   /* Process regular file */
   size_t file_size = stat->st_size;
   int infile = safeOpen(curr_path, O_RDONLY, 0);
-  FileContent * file_contents = safeRead(infile);
+  FileContent* file_contents = safeRead(infile);
   safeWrite(outfile, file_contents->file_contents, file_size);
   size_t padding_bytes = file_size % ARCHIVE_BLOCK_SIZE;
   if (padding_bytes > 0) {
-    char * padding = (char *)safeCalloc(sizeof(char), padding_bytes);
+    char* padding = (char*)safeCalloc(sizeof(char), padding_bytes);
     safeWrite(outfile, padding, padding_bytes);
     safeFree(padding);
   }
@@ -35,14 +35,14 @@ void handleFileContents(int outfile, char* curr_path, int verbose, int strict) {
 void handleDirContents(int outfile, char* curr_path, int verbose, int strict) {
   /* Process directory */
   DIR* dir = safeOpenDir(curr_path);
-  DirContent * dir_contents = safeReadDir(dir);
+  DirContent* dir_contents = safeReadDir(dir);
   for (int i = 0; i < dir_contents->num_entries; i++) {
     struct dirent* entry = dir_contents->entries[i];
-    if (strcmp(entry->d_name, ".") == 0 ||
-        strcmp(entry->d_name, "..") == 0) {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
       continue;
     }
-    char* new_path = (char*)safeCalloc(sizeof(char), strlen(curr_path) + strlen(entry->d_name) + 2);
+    char* new_path = (char*)safeCalloc(
+        sizeof(char), strlen(curr_path) + strlen(entry->d_name) + 2);
     snprintf(new_path, PATH_MAX, "%s/%s", curr_path, entry->d_name);
     createArchiveHelper(outfile, new_path, verbose, strict);
     safeFree(new_path);
@@ -129,28 +129,34 @@ void createArchiveHelper(
       (char*)safeCalloc(sizeof(char), ARCHIVE_LINKNAME_SIZE);
   snprintf(header_linkname, ARCHIVE_LINKNAME_SIZE, "%s", "");
   checksum += strlen(header_linkname);
-  /* Store the magic in a string */
+  /* Store the magic number in a string */
   char* header_magic = (char*)safeCalloc(sizeof(char), ARCHIVE_MAGIC_SIZE + 1);
   snprintf(header_magic, ARCHIVE_MAGIC_SIZE + 1, "%s", ARCHIVE_MAGIC);
   checksum += strlen(header_magic);
+  /* Store the version in a string */
   char* header_version =
       (char*)safeCalloc(sizeof(char), ARCHIVE_VERSION_SIZE + 1);
   snprintf(header_version, ARCHIVE_VERSION_SIZE + 1, "%s", ARCHIVE_VERSION);
   checksum += strlen(header_version);
+  /* Store the username in a string */
   char* header_uname = (char*)safeCalloc(sizeof(char), ARCHIVE_UNAME_SIZE);
   snprintf(header_uname, ARCHIVE_UNAME_SIZE, "%s", "cs537");
   checksum += strlen(header_uname);
+  /* Store the group name in a string */
   char* header_gname = (char*)safeCalloc(sizeof(char), ARCHIVE_GNAME_SIZE);
   snprintf(header_gname, ARCHIVE_GNAME_SIZE, "%s", "cs537");
   checksum += strlen(header_gname);
+  /* Store the devmajor in a string */
   char* header_devmajor =
       (char*)safeCalloc(sizeof(char), ARCHIVE_DEVMAJOR_SIZE + 1);
   snprintf(header_devmajor, ARCHIVE_DEVMAJOR_SIZE + 1, "%08o", 0);
   checksum += strlen(header_devmajor);
+  /* Store the devminor in a string */
   char* header_devminor =
       (char*)safeCalloc(sizeof(char), ARCHIVE_DEVMINOR_SIZE + 1);
   snprintf(header_devminor, ARCHIVE_DEVMINOR_SIZE + 1, "%08o", 0);
   checksum += strlen(header_devminor);
+  /* Store the prefix in a string */
   char* header_prefix = (char*)safeCalloc(sizeof(char), ARCHIVE_PREFIX_SIZE);
   snprintf(header_prefix, ARCHIVE_PREFIX_SIZE, "%s", "");
   checksum += strlen(header_prefix);
@@ -263,25 +269,26 @@ void createArchive(char* archive_name, int file_count, char* file_names[],
   }
   safeClose(outfile);
 }
-// /**
-//  * Lists the contents of a tar archive
-//  *
-//  * @param archive_name the name of the archive to list
-//  * @param verbose a flag to indicate whether to give verbose output while
-//  listing the archive
-//  * @param strict a flag to indicate whether to be strict on files conforming
-//  to the POSIX-specified USTAR archive format
-//  */
+
+/**
+ * Lists the contents of a tar archive
+ *
+ * @param archive_name the name of the archive to list
+ * @param verbose a flag to indicate whether to give verbose output while
+ listing the archive
+ * @param strict a flag to indicate whether to be strict on files conforming
+ to the POSIX-specified USTAR archive format
+ */
 // void listArchive(char *archive_name, int verbose, int strict) {}
 
-// /**
-//  * Extracts the contents of a tar archive
-//  *
-//  * @param archive_name the name of the archive to extract
-//  * @param verbose a flag to indicate whether to give verbose output while
-//   extracting the archive
-//  * @param strict a flag to indicate whether to be strict on files conforming
-//  to
-//   the POSIX-specified USTAR archive format
-// */
+/**
+ * Extracts the contents of a tar archive
+ *
+ * @param archive_name the name of the archive to extract
+ * @param verbose a flag to indicate whether to give verbose output while
+  extracting the archive
+ * @param strict a flag to indicate whether to be strict on files conforming
+ to
+  the POSIX-specified USTAR archive format
+*/
 // void extractArchive(char *archive_name, int verbose, int strict) {}
