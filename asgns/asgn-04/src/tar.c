@@ -13,9 +13,75 @@
 #include "safe_dir.h"
 #include "safe_file.h"
 
+void handleFileContents(int outfile, char* curr_path, int verbose, int strict) {
+  struct stat* stat = safeMalloc(sizeof(struct stat));
+  safeLstat(curr_path, stat);
+  /* Process regular file */
+  size_t file_size = stat->st_size;
+  int infile = safeOpen(curr_path, O_RDONLY, 0);
+  FileContent * file_contents = safeRead(infile);
+  safeWrite(outfile, file_contents->file_contents, file_size);
+  size_t padding_bytes = file_size % ARCHIVE_BLOCK_SIZE;
+  if (padding_bytes > 0) {
+    char * padding = (char *)safeCalloc(sizeof(char), padding_bytes);
+    safeWrite(outfile, padding, padding_bytes);
+    safeFree(padding);
+  }
+  freeFileContent(file_contents);
+  safeClose(infile);
+  safeFree(stat);
+}
+
+void handleDirContents(int outfile, char* curr_path, int verbose, int strict) {
+  /* Process directory */
+  DIR* dir = safeOpenDir(curr_path);
+  DirContent * dir_contents = safeReadDir(dir);
+  for (int i = 0; i < dir_contents->num_entries; i++) {
+    struct dirent* entry = dir_contents->entries[i];
+    if (strcmp(entry->d_name, ".") == 0 ||
+        strcmp(entry->d_name, "..") == 0) {
+      continue;
+    }
+    char* new_path = (char*)safeCalloc(sizeof(char), strlen(curr_path) + strlen(entry->d_name) + 2);
+    snprintf(new_path, PATH_MAX, "%s/%s", curr_path, entry->d_name);
+    createArchiveHelper(outfile, new_path, verbose, strict);
+    safeFree(new_path);
+  }
+  // struct dirent* entry;
+  // while ((entry = safeReadDir(dir)) != NULL) {
+  //   if (strcmp(entry->d_name, ".") == 0 ||
+  //       strcmp(entry->d_name, "..") == 0) {
+  //     continue;
+  //   }
+  //   char* new_path = (char*)safeCalloc(sizeof(char), PATH_MAX);
+  //   snprintf(new_path, PATH_MAX, "%s/%s", curr_path, entry->d_name);
+  //   createArchiveHelper(outfile, new_path, verbose, strict);
+  //   safeFree(new_path);
+  // }
+  safeCloseDir(dir);
+  freeDirContent(dir_contents);
+}
+
+void handleLinkContents(int outfile, char* curr_path, int verbose, int strict) {
+  // Process symbolic link
+  char linkname[PATH_MAX];
+  ssize_t r = readlink(curr_path, linkname, sizeof(linkname) - 1);
+  if (!(r < 0)) {
+    linkname[r] = '\0';
+    struct stat* link_stat = safeMalloc(sizeof(struct stat));
+    safeLstat(curr_path, link_stat);
+    if (S_ISREG(link_stat->st_mode)) {
+      handleFileContents(outfile, linkname, verbose, strict);
+    } else if (S_ISDIR(link_stat->st_mode)) {
+      handleDirContents(outfile, linkname, verbose, strict);
+    } else if (S_ISLNK(link_stat->st_mode)) {
+      handleLinkContents(outfile, linkname, verbose, strict);
+    }
+  }
+}
+
 void createArchiveHelper(
     int outfile, char* curr_path, int verbose, int strict) {
-  printf("strict: %d\n", strict);
   uint8_t checksum = 0;
   /* Get the stat of the file/directory */
   struct stat* stat = safeMalloc(sizeof(struct stat));
@@ -169,51 +235,13 @@ void createArchiveHelper(
     printf(" %-*s", MTIME_WIDTH, time_str);
     printf(" %s\n", curr_path);
   }
-
-  // for (int i = 0; i < cwd_contents->num_entries; i++) {
-  //   struct dirent* cwd_entry = cwd_contents->entries[i];
-  //   struct stat* stat = safeMalloc(sizeof(struct stat));
-  //   safeLstat(cwd_entry->d_name, stat);
-  //   // Get the length of the string
-  //   size_t inputLength = strlen(cwd_entry->d_name);
-  //   // Determine the number of bytes to write (maximum 100)
-  //   size_t bytesToWrite = (inputLength > ARCHIVE_NAME_SIZE) ?
-  //   ARCHIVE_NAME_SIZE : inputLength;
-  //   // Write the string to the archive
-  //   safeWrite(outfile, cwd_entry->d_name, bytesToWrite);
-  //   // Write the padding to the archive
-  //   char padding[ARCHIVE_NAME_SIZE - bytesToWrite];
-  //   safeWrite(outfile, padding, ARCHIVE_NAME_SIZE - bytesToWrite);
-  // }
-
-  // USTARHeader* header = (USTARHeader*) safeCalloc(sizeof(USTARHeader), 1);
-  // header->name = cwd_entry->d_name;
-  // header->mode = stat->st_mode;
-  // header->uid = stat->st_uid;
-  // header->gid = stat->st_gid;
-  // if (S_ISREG(file_stat.st_mode)) {
-  //   // Process regular file
-  // } else if (S_ISDIR(file_stat.st_mode)) {
-  //   // Process directory
-  // } else if (S_ISLNK(file_stat.st_mode)) {
-  //   // Process symbolic link
-  // }
-
-  // header->size = stat->st_size;
-  // header->mtime = stat->st_mtime;
-  // header->chksum =
-  // header->typeflag = 0;
-  // header->linkname = "";
-  // header->magic = TMAGIC;
-  // header->version = TVERSION;
-  // header->uname = "cs537";
-  // header->gname = "cs537";
-  // header->devmajor = 0;
-  // header->devminor = 0;
-  // header->prefix = "";
-  // header->pad = "";
-
-  // }
+  if (S_ISREG(stat->st_mode)) {
+    handleFileContents(outfile, curr_path, verbose, strict);
+  } else if (S_ISDIR(stat->st_mode)) {
+    handleDirContents(outfile, curr_path, verbose, strict);
+  } else if (S_ISLNK(stat->st_mode)) {
+    handleLinkContents(outfile, curr_path, verbose, strict);
+  }
 }
 
 /**
@@ -231,44 +259,10 @@ void createArchive(char* archive_name, int file_count, char* file_names[],
     int verbose, int strict) {
   int outfile = safeOpen(archive_name, (O_WRONLY | O_CREAT | O_TRUNC), S_IRWXU);
   for (int i = 0; i < file_count; i++) {
-    printf("file_names: %s\n", file_names[i]);
     createArchiveHelper(outfile, file_names[0], verbose, strict);
   }
   safeClose(outfile);
-
-  // for (int i = 0; i < file_count; i++) {
-  //   int infile = safeOpen(file_names[i], O_RDONLY, 0);
-  //   struct stat stat_buf;
-  //   safeFstat(infile, &stat_buf);
-  //   struct posix_header header;
-  //   memset(&header, 0, sizeof(header));
-  //   strncpy(header.name, file_names[i], sizeof(header.name));
-  //   snprintf(header.size, sizeof(header.size), "%011llo", stat_buf.st_size);
-  //   snprintf(header.mode, sizeof(header.mode), "%07o", stat_buf.st_mode);
-  //   snprintf(header.mtime, sizeof(header.mtime), "%011lo",
-  //   stat_buf.st_mtime); snprintf(header.chksum, sizeof(header.chksum),
-  //   "%06o", 0); strncpy(header.magic, TMAGIC, sizeof(header.magic));
-  //   strncpy(header.version, TVERSION, sizeof(header.version));
-  //   strncpy(header.uname, "cs537", sizeof(header.uname));
-  //   strncpy(header.gname, "cs537", sizeof(header.gname));
-  //   snprintf(header.devmajor, sizeof(header.devmajor), "%07o", 0);
-  //   snprintf(header.devminor, sizeof(header.devminor), "%07o", 0);
-  //   safeWrite(outfile, &header, sizeof(header));
-  //   char buf[512];
-  //   int bytes_read;
-  //   while ((bytes_read = safeRead(infile, buf, sizeof(buf))) > 0) {
-  //     safeWrite(outfile, buf, bytes_read);
-  //   }
-  //   if (bytes_read < 0) {
-  //     fprintf(stderr, "Error reading file: %s\n", file_names[i]);
-  //     exit(EXIT_FAILURE);
-  //   }
-  //   if (bytes_read < sizeof(buf)) {
-  //     memset(buf, 0, sizeof(buf));
-  //     safeWrite(outfile, buf, sizeof(buf) - bytes_read);
-  //   }
 }
-
 // /**
 //  * Lists the contents of a tar archive
 //  *

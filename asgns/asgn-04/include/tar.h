@@ -92,6 +92,7 @@ typedef struct USTARHeader {
 /* Begin function prototype declarations */
 void createArchive(char *archive_name, int file_count, char *file_names[],
     int verbose, int strict);
+void createArchiveHelper(int outfile, char* curr_path, int verbose, int strict);
 void listArchive(char *archive_name, int verbose, int strict);
 void extractArchive(char *archive_name, int verbose, int strict);
 #endif /* TAR_H */
