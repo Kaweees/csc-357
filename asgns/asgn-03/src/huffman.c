@@ -1,27 +1,91 @@
-#include "huffman.h"
-
+#include <arpa/inet.h>
+#include <fcntl.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#define MAX_CODE_LENGTH 256 /* total number of characters in ASCII */
-#define SPACE_CHAR      32  /* asci code for a space */
+#include "linked_list.h"
+#include "safe_file.h"
+#include "safe_mem.h"
 
-void vaildate_malloc(void* ptr) {
-  if (ptr == NULL) {
-    perror("Memory allocation error");
-    exit(1);
+/**
+ * Creates a FrequencyList
+ *
+ * @return a pointer to the FrequencyList
+ */
+FrequencyList* createFrequencyList(size_t size) {
+  FrequencyList* freq = (FrequencyList*)safe_calloc(sizeof(FrequencyList), 1);
+  freq->num_non_zero_freq = 0;
+  freq->size = size;
+  freq->frequencies =
+      (unsigned int*)safe_calloc(freq->size, sizeof(unsigned int));
+  return freq;
+}
+
+/**
+ * Opens a file and counts the frequency of each character in the file
+ *
+ * @param file - a pointer to the file to count the frequencies of
+ * @return an array of character frequencies in ascending asci order
+ */
+FrequencyList* countFrequencies(FileContent* file_contents) {
+  FrequencyList* char_freq = createFrequencyList(MAX_CODE_LENGTH);
+  int i;
+  for (i = 0; i < file_contents->file_size; i++) {
+    if (char_freq->frequencies[(int)file_contents->file_contents[i]] == 0) {
+      char_freq->num_non_zero_freq++;
+    }
+    char_freq->frequencies[(int)file_contents->file_contents[i]]++;
+  }
+  return char_freq;
+}
+/**
+ * Read a frequency list and write it to a file as a header
+ *
+ * @param ascii - the ASCII character
+ * @param freq - the frequency of the character
+ * @param left - the left child of the node
+ * @param right - the right child of the node
+ * @return a pointer to the node
+ */
+void createHeader(FrequencyList* freq_list, int outfile) {
+  uint8_t size = freq_list->num_non_zero_freq - 1;
+  safe_write(outfile, &size, sizeof(uint8_t));
+  int i;
+  for (i = 0; i < freq_list->size; i++) {
+    if (freq_list->frequencies[i] > 0) {
+      uint8_t ascii = i;
+      uint32_t frequency = freq_list->frequencies[i];
+      frequency = htonl(frequency);
+      safe_write(outfile, &ascii, sizeof(uint8_t));
+      safe_write(outfile, &frequency, sizeof(uint32_t));
+    }
   }
 }
 
-/* Represents a node in a Huffman tree */
-struct HuffmanNode {
-  char char_asci;
-  int char_freq;
-  struct HuffmanNode* left;
-  struct HuffmanNode* right;
-};
+/**
+ * Creates a Huffman node
+ *
+ * @param ascii - the ASCII character
+ * @param freq - the frequency of the character
+ * @param left - the left child of the node
+ * @param right - the right child of the node
+ * @return a pointer to the node
+ */
+HuffmanNode* createNode(char ascii, int freq, HuffmanNode* left,
+    HuffmanNode* right, HuffmanNode* next) {
+  HuffmanNode* newNode = (HuffmanNode*)safe_malloc(sizeof(HuffmanNode));
+  newNode->char_ascii = ascii;
+  newNode->char_freq = freq;
+  newNode->left = left;
+  newNode->right = right;
+  newNode->next = next;
+  return newNode;
+}
 
 /**
  * Returns whether a HuffmanNode should come before another HuffmanNode.
@@ -31,191 +95,194 @@ struct HuffmanNode {
  * @param b - a pointer to the second HuffmanNode
  * @return 1 if a should come before b, 0 otherwise
  */
-int comesBefore(struct HuffmanNode* a, struct HuffmanNode* b) {
-  if (a->char_freq == b->char_freq) {
-    return a->char_asci < b->char_asci;
+int comesBefore(HuffmanNode* a, HuffmanNode* b) {
+  return a->char_freq < b->char_freq ||
+         (a->char_freq == b->char_freq && a->char_ascii < b->char_ascii);
+}
+
+/**
+ * Creates a LinkedList
+ *
+ * @return a pointer to the linked list
+ */
+LinkedList* createLinkedList() {
+  LinkedList* lls = (LinkedList*)safe_malloc(sizeof(LinkedList));
+  lls->size = 0;
+  lls->head = NULL;
+  return lls;
+}
+
+void insert(HuffmanNode* head, HuffmanNode* node) {
+  HuffmanNode* firstNode;
+  firstNode = head;
+  while ((firstNode->next != NULL) && comesBefore(firstNode->next, node)) {
+    firstNode = firstNode->next;
+  }
+  node->next = firstNode->next;
+  firstNode->next = node;
+}
+
+/**
+ * Inserts a HuffmanNode into a LinkedList at its correct position
+ *
+ * @param lls - a pointer to the LinkedList
+ * @param node - a pointer to the HuffmanNode to insert
+ */
+void insertNode(LinkedList* lls, HuffmanNode* node) {
+  if (lls->size == 0) {
+    lls->head = node;
   } else {
-    return a->char_freq < b->char_freq;
+    /* Set curr to the node before the insertion point */
+    HuffmanNode* curr = lls->head;
+    while (curr->next != NULL && comesBefore(curr->next, node)) {
+      curr = curr->next;
+    }
+    node->next = curr->next;
+    curr->next = node;
+  }
+  lls->size++;
+}
+
+/**
+ * Remove and return the first node from a LinkedList
+ *
+ * @param lls - a pointer to the LinkedList
+ * @return the first node in the LinkedList
+ */
+HuffmanNode* removeFirst(LinkedList* lls) {
+  if (lls->size == 0) {
+    return NULL;
+  } else {
+    HuffmanNode* temp = lls->head;
+    lls->head = lls->head->next;
+    lls->size--;
+    temp->next = NULL;
+    return temp;
   }
 }
 
 /**
- * Superimposes a Huffman tree onto a Huffman tree. The root of the new tree is
- * the root of the first tree, and the left and right children of the root are
- * the roots of the second and third trees, respectively.
+ * Superimposes a Huffman node onto another Huffman node
  * @param a - a pointer to the first HuffmanNode
  * @param b - a pointer to the second HuffmanNode
  * @return the root of the new tree
  */
-struct HuffmanNode* combine(struct HuffmanNode* a, struct HuffmanNode* b) {
-  struct HuffmanNode* combined =
-      (struct HuffmanNode*)malloc(sizeof(struct HuffmanNode));
-  vaildate_malloc(combined);
-  char min_char_asci =
-      (a->char_asci < b->char_asci) ? a->char_asci : b->char_asci;
-  if (comesBefore(a, b)) {
-    combined->left = a;
-    combined->right = b;
-  } else {
-    combined->left = b;
-    combined->right = a;
-  }
-  combined->char_asci = min_char_asci;
-  combined->char_freq = a->char_freq + b->char_freq;
-  return combined;
-}
-
-char** buildCodes(struct HuffmanNode* root);
-
-char* createHeader(char* codes, char* text) {
-  // for (int i = 0; i < strlen()) HuffmanNode* pop(struct LinkedList * list);
-}
-
-/**
- * Takes a string of the form "x y z" and returns an array of frequencies in
- * ascending asci order
- *
- * @param file - a pointer to the file to read the line from
- * @return a pointer to the line read from the file
- */
-int* parseHeader(char* header, char* text) {
-  int* freq_list = malloc(sizeof(int) * MAX_CODE_LENGTH);
-  int ch; /* character read from file */
-  vaildate_malloc(freq_list);
-  int header_length = strlen(header);
-  int i = 0;
-  while (i < header_length) {
-    while ((ch = header[i]) != SPACE_CHAR) {
-      i = (i * 10) + (ch - '0');
-      i++;
-    }
-    freq_list[i]++;
-    i = 0;
-  }
-}
-
-/**
- * Opens a file and counts the frequency of each character in the file
- *
- * @param file - a pointer to the file to count the frequencies of
- * @return an array of character frequencies in ascending asci order
- */
-int* countFrequencies(FILE* fp) {
-  int* freq_list;
-  int ch; /* character read from file */
-  freq_list = (int*)calloc(MAX_CODE_LENGTH, sizeof(int));
-  vaildate_malloc(freq_list);
-  while ((ch = fgetc(fp)) != EOF) {
-    freq_list[ch]++;
-  }
-}
-
-void merge(int arr[], int left, int mid, int right) {
-  int n1 = mid - left + 1;
-  int n2 = right - mid;
-
-  int L[n1], R[n2];
-
-  for (int i = 0; i < n1; i++) {
-    L[i] = arr[left + i];
-  }
-  for (int i = 0; i < n2; i++) {
-    R[i] = arr[mid + 1 + i];
-  }
-
-  int i = 0, j = 0, k = left;
-  while (i < n1 && j < n2) {
-    if (L[i] >= R[j]) {
-      arr[k] = L[i];
-      i++;
-    } else {
-      arr[k] = R[j];
-      j++;
-    }
-    k++;
-  }
-
-  while (i < n1) {
-    arr[k] = L[i];
-    i++;
-    k++;
-  }
-
-  while (j < n2) {
-    arr[k] = R[j];
-    j++;
-    k++;
-  }
-}
-
-void mergeSort(int arr[], int left, int right) {
-  if (left < right) {
-    int mid = left + (right - left) / 2;
-
-    mergeSort(arr, left, mid);
-    mergeSort(arr, mid + 1, right);
-
-    merge(arr, left, mid, right);
-  }
+HuffmanNode* combine(HuffmanNode* a, HuffmanNode* b) {
+  /* Put the node with the smaller frequency on the left, and set the frequency
+   * of the new node to the sum of the children. */
+  a->next = b->next = NULL;
+  return createNode(0, a->char_freq + b->char_freq, comesBefore(a, b) ? a : b,
+      comesBefore(a, b) ? b : a, NULL);
 }
 
 /**
  * Creates a Huffman tree from an array of character frequencies
  *
  * @param frequencies - an array of character frequencies in ascending asci
+ * order
  * @return the root of the Huffman tree
  */
-struct HuffmanNode* buildHuffmanTree(int* frequencies) {
-  struct HuffmanNode* root = NULL;
-  struct HuffmanNode* non_zero_nodes = (struct HuffmanNode*)malloc(
-      MAX_CODE_LENGTH *
-      sizeof(struct HuffmanNode)); /* node list containing HuffmanNodes of
-                     characters with non-zero frequencies */
-  vaildate_malloc(non_zero_nodes);
-  int non_zero_nodes_size = 0;
-  for (int i = 0; i < MAX_CODE_LENGTH; i++) {
-    if (frequencies[i] > 0) {
-      struct HuffmanNode node;
-      node.left = NULL;
-      node.right = NULL;
-      node.char_freq = frequencies[i];
-      node.char_asci = i;
-      non_zero_nodes[non_zero_nodes_size] = node;
-      non_zero_nodes_size++;
+HuffmanNode* buildHuffmanTree(FrequencyList* frequencies) {
+  HuffmanNode* head;
+  int i;
+  head = createNode(0, 0, NULL, NULL, NULL);
+  for (i = 0; i < MAX_CODE_LENGTH; i++) {
+    HuffmanNode* newNode;
+    if (frequencies->frequencies[i] > 0) {
+      newNode = createNode(i, frequencies->frequencies[i], NULL, NULL, NULL);
+      insert(head, newNode);
     }
   }
-  non_zero_nodes = (struct HuffmanNode*)realloc(
-      non_zero_nodes, non_zero_nodes_size * sizeof(struct HuffmanNode));
-  vaildate_malloc(non_zero_nodes);
-  if (non_zero_nodes_size == 0) {
-    return root;
+
+  /* creates new node with updated freq */
+  while (head->next->next != NULL) {
+    HuffmanNode* leftNode = head->next;
+    HuffmanNode* rightNode = head->next->next;
+    /* create the new node */
+    HuffmanNode* newNode = createNode(
+        0, leftNode->char_freq + rightNode->char_freq, NULL, NULL, NULL);
+    head->next = head->next->next->next;
+    leftNode->next = NULL;
+    rightNode->next = NULL;
+    newNode->left = leftNode;
+    newNode->right = rightNode;
+    insert(head, newNode);
+  }
+  /* move the new node with the updated freq to the front */
+  HuffmanNode* oldHead;
+  oldHead = head;
+  head = head->next;
+  free(oldHead);
+  return head;
+}
+
+void buildCodesHelper(HuffmanNode* node, char** huffman_codes, char* code_str) {
+  if (node == NULL) {
+    return;
+  }
+  if (node->left == NULL && node->right == NULL) {
+    huffman_codes[(int)node->char_ascii] = strdup(code_str);
   } else {
-    while (non_zero_nodes_size > 1) {
-      mergeSort(non_zero_nodes, 0, non_zero_nodes_size - 1);
-      struct HuffmanNode* a = non_zero_nodes[0];
-      struct HuffmanNode* b = non_zero_nodes[1];
-      struct HuffmanNode* combined = combine(a, b);
-      non_zero_nodes[0] = combined;
-      for (int i = 1; i < non_zero_nodes_size - 1; i++) {
-        non_zero_nodes[i] = non_zero_nodes[i + 1];
-      }
-      non_zero_nodes_size--;
-    }
-    root = (struct HuffmanNode*)realloc(non_zero_nodes, non_zero_nodes_size);
-    return root;
+    char left_code[strlen(code_str) + 2];
+    char right_code[strlen(code_str) + 2];
+    strcpy(left_code, code_str);
+    strcpy(right_code, code_str);
+    strcat(left_code, "0");
+    strcat(right_code, "1");
+    buildCodesHelper(node->left, huffman_codes, left_code);
+    buildCodesHelper(node->right, huffman_codes, right_code);
   }
 }
 
-size_t huffmanEncode(FILE* infile, FILE* outfile) {
-  int* char_freq = countFrequencies(infile);
-  struct HuffmanNode* root = buildHuffmanTree(char_freq);
-  char** codes = buildCodes(root);
-  char* header = createHeader(codes, text);
-  char* encodedtext = readText(infile);
-  writeHeader(outfile, header);
-  writeEncodedText(outfile, text, codes);
-  free(char_freq);
-  free(root);
-  free(codes);
-  free(header);
+char** buildCodes(HuffmanNode* node) {
+  int i;
+  char** huffman_codes = (char**)calloc(MAX_CODE_LENGTH, sizeof(char*));
+  for (i = 0; i < MAX_CODE_LENGTH; i++) {
+    huffman_codes[i] = NULL;
+  }
+  buildCodesHelper(node, huffman_codes, "");
+  return huffman_codes;
+}
+
+/**
+ * Frees the memory allocated for a FrequencyList
+ *
+ * @param node - a pointer to the root of the Huffman tree
+ */
+void freeFrequencyList(FrequencyList* freq_list) {
+  if (freq_list == NULL) {
+    return;
+  }
+  safe_free(freq_list->frequencies);
+  safe_free(freq_list);
+}
+
+/**
+ * Frees the Huffman tree nodes and associated memory
+ *
+ * @param node - a pointer to the root of the Huffman tree
+ */
+void freeHuffmanTree(HuffmanNode* node) {
+  if (node == NULL) {
+    return;
+  }
+  freeHuffmanTree(node->left);
+  freeHuffmanTree(node->right);
+  /* Free the current node after its children are freed */
+  safe_free(node);
+}
+
+/**
+ * Frees the memory allocated for Huffman codes
+ *
+ * @param huffman_codes - an array of Huffman codes
+ */
+void freeHuffmanCodes(char** huffman_codes) {
+  int i;
+  for (i = 0; i < MAX_CODE_LENGTH; i++) {
+    if (huffman_codes[i] != NULL) {
+      safe_free(huffman_codes[i]);
+    }
+  }
+  safe_free(huffman_codes);
 }

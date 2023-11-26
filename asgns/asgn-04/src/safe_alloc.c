@@ -1,13 +1,17 @@
-#include "safe_mem.h"
+/*
+ * safe_alloc.c - wrapper for allocator sycalls with an emphasis on safety and
+ simplicity
+ *
+ * All of the memory allocation-related syscalls are wrapped in a way that
+ emphasizes safety and simplicity. The results of every syscall are validated
+ for intended behavior upon execution.
+ */
+#include "safe_alloc.h"
 
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#define FILE_ERROR -1
 #include <sys/stat.h>
-
-struct stat file_info;
 
 /**
  * A safe version of malloc that validates memory allocation and exits on
@@ -15,10 +19,10 @@ struct stat file_info;
  * @param size the number of bytes to allocate in the heap
  * @return a pointer to successfully allocated memory
  */
-void *safe_malloc(size_t size) {
+void *safeMalloc(size_t size) {
   void *ptr;
   if (!(ptr = malloc(size))) {
-    perror("Memory allocation error");
+    perror("Memory allocation error.\n");
     exit(EXIT_FAILURE);
   }
   return ptr;
@@ -31,9 +35,9 @@ void *safe_malloc(size_t size) {
  * @param size the number of bytes to allocate in the heap
  * @return a pointer to the successfully reallocated memory
  */
-void *safe_realloc(void *ptr, size_t size) {
+void *safeRealloc(void *ptr, size_t size) {
   if (!(ptr = realloc(ptr, size))) {
-    perror("Memory allocation error");
+    perror("Memory allocation error.\n");
     exit(EXIT_FAILURE);
   }
   return ptr;
@@ -46,10 +50,10 @@ void *safe_realloc(void *ptr, size_t size) {
  * @param size the size of each element in bytes
  * @return a pointer to the successfully allocated memory
  */
-void *safe_calloc(size_t nmemb, size_t size) {
+void *safeCalloc(size_t nmemb, size_t size) {
   void *ptr;
   if (!(ptr = calloc(nmemb, size))) {
-    perror("Memory allocation error");
+    perror("Memory allocation error.\n");
     exit(EXIT_FAILURE);
   }
   return ptr;
@@ -59,7 +63,7 @@ void *safe_calloc(size_t nmemb, size_t size) {
  * A safe version of free that validates memory allocation and exits on failure
  * @param ptr a pointer to the memory to free
  */
-void safe_free(void *ptr) {
+void safeFree(void *ptr) {
   if (ptr != NULL) {
     free(ptr);
     ptr = NULL;

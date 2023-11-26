@@ -13,5 +13,6 @@
   "[hpp]": {
     "editor.formatOnSave": true,
   },
-  "clang-format.executable": "${workspaceRoot}clang-format"
+  "clang-format.executable": "${workspaceRoot}clang-format",
+  "ros.distro": "humble"
 }

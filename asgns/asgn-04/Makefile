@@ -3,18 +3,25 @@
 
 ## Program Section: change these variables based on your program
 # The name of the program to build.
-TARGET := htable
+TARGET := mytar
+
+## Handin Section: change these variables based on your handin
+# -----------------------------------------------------------------------------
+# The assignment number.
+HANDIN_ASGN := asgn4
+# The class name.
+HANDIN_CLASS := pn-cs357
 
 ## Compiler Section: change these variables based on your compiler
 # -----------------------------------------------------------------------------
 # The compiler executable.
 CC := gcc
 # The compiler flags.
-CFLAGS := -Wall
+CFLAGS := -Wall -Wextra -Werror -std=gnu99 -pedantic -ggdb -g
 # The linker executable.
 LD := gcc
 # The linker flags.
-LDFLAGS := -Wall
+LDFLAGS := -Wall -Wextra -Werror -std=gnu99 -pedantic -ggdb -g
 # The shell executable.
 SHELL := /bin/bash
 
@@ -32,11 +39,11 @@ DEBUGGER_FLAGS :=
 # The name of the test input file
 TEST_INPUT := test_input.txt
 # The name of the test output file
-TEST_OUTPUT := 
+TEST_OUTPUT := test_output.tar
 # The name of the reference executable
-REF_EXE := ~pn-cs357/demos/htable
+REF_EXE := ~pn-cs357/demos/mytar
 # The name of the reference output file
-REF_OUTPUT := 
+REF_OUTPUT := ref_output.tar
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -63,7 +70,7 @@ BINS := $(BUILD_DIR)$(TARGET)
 ## Command Section: change these variables based on your commands
 # -----------------------------------------------------------------------------
 # Targets
-.PHONY: all $(TARGET) test clean debug
+.PHONY: all $(TARGET) test clean debug help handin latedays testcases
 
 # Default target: build the program
 all: $(BINS)
@@ -82,24 +89,50 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 # Test target: build and test the program against sample input
-test: $(BINS)
-	@echo "Testing $(TARGET)..."
-	@echo "Testing memory leaks..."
-	$(BINS) $(TEST_INPUT)
-	$(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS) $(TEST_INPUT)
-	@echo "Comparing output to $(REF_EXE):"
-	diff <($(BINS) $(TEST_INPUT)) <($(REF_EXE) $(TEST_INPUT))
-# $(BINS) hdecode output.txt decoded.txt	
+test: $(TARGET)
+	$(BINS) -c -f $(TEST_OUTPUT) $(TEST_INPUT)
+
+# @echo "Testing $(BINS)..."
+# @echo "Testing memory leaks..."
+# $(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS)
+# @echo "Comparing output to $(REF_EXE):"
+# diff <($(BINS)) <($(REF_EXE))
 
 # Clean target: remove build artifacts and non-essential files
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf $(BUILD_DIR)
 
 # Debug target: use a debugger to debug the program
-debug: $(BINS)
-	@mkdir -p $(OBJ_DIR) # Create the object directory if it doesn't exist
-	$(CC) $(CFLAGS) -g $(INCS) -c $< -o $@
-	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
-	$(LD) $(LDFLAGS) $(OBJS) -o $(BINS)
+debug: $(BINS)	
 	@echo "Debugging $(TARGET)..."
-	$(DEBUGGER) $(BINS)
+	$(DEBUGGER) $(DEBUGGER_FLAGS) $(BINS)
+
+# Help target: display usage information
+help:
+	@echo "Usage: make <target>"
+	@echo ""
+	@echo "Targets:"
+	@echo "  all              Build $(TARGET)"
+	@echo "  $(TARGET) 	   Build $(TARGET)"
+	@echo "  test             Build and test $(TARGET) against a sample input, use $(MEMCHECK) to check for memory leaks, and compare the output to $(REF_EXE)"
+	@echo "  clean            Remove build artifacts and non-essential files"
+	@echo "  debug            Use $(DEBUGGER) to debug $(HENCODE_TARGET) and $(HDECODE_TARGET)"
+	@echo "  help             Display this help information"
+	@echo "  handin           Hand in the assignment using the handin program"
+	@echo "  latedays         Reopen the assignment using the latedays program"
+	@echo "  testcases        Run the program against the testcases"
+
+# Handin target: hand in the assignment using the handin program
+handin:
+	@echo "Submitting $(HANDIN_ASGN) via handin..."
+	handin $(HANDIN_CLASS) $(HANDIN_ASGN) *.c *.h Makefile README
+
+# Latedays target: reopen the assignment using the latedays program
+latedays:
+	@echo "Reopening $(HANDIN_ASGN) via latedays..."
+
+# Testcases target: run the program against the testcases
+testcases:
+	@echo "Running testcases..."
+	~pn-cs357/demos/try$(shell L1=$(HANDIN_ASGN); echo $${L1^})
