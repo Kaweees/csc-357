@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   enum TarOptions opt;
   int create = 0, list = 0, extract = 0, verbose, strict = 0;
   char *archive_name = NULL;
-  while ((opt = getopt(argc, argv, "ctxvf:S")) != OUT_OF_OPTIONS) {
+  while ((opt = getopt(argc, argv, "ctxvSf:")) != OUT_OF_OPTIONS) {
     switch (opt) {
       case CREATE_ARCHIVE:
         create = 1;

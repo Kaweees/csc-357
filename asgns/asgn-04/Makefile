@@ -38,6 +38,8 @@ DEBUGGER_FLAGS :=
 
 # The name of the test input file
 TEST_INPUT := test_input.txt
+# The arguments to pass to the test input
+TEST_ARGS :=  -v -c -f
 # The name of the test output file
 TEST_OUTPUT := test_output.tar
 # The name of the reference executable
@@ -90,7 +92,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Test target: build and test the program against sample input
 test: $(TARGET)
-	$(BINS) -c -f $(TEST_OUTPUT) $(TEST_INPUT)
+	$(BINS) $(TEST_ARGS) $(TEST_OUTPUT) $(TEST_INPUT)
 
 # @echo "Testing $(BINS)..."
 # @echo "Testing memory leaks..."

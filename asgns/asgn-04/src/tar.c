@@ -13,7 +13,7 @@
 #include "safe_dir.h"
 #include "safe_file.h"
 
-void handleFileContents(int outfile, char* curr_path, int verbose, int strict) {
+void handleFileContents(int outfile, char* curr_path) {
   struct stat* stat = safeMalloc(sizeof(struct stat));
   safeLstat(curr_path, stat);
   /* Process regular file */
@@ -71,7 +71,7 @@ void handleLinkContents(int outfile, char* curr_path, int verbose, int strict) {
     struct stat* link_stat = safeMalloc(sizeof(struct stat));
     safeLstat(curr_path, link_stat);
     if (S_ISREG(link_stat->st_mode)) {
-      handleFileContents(outfile, linkname, verbose, strict);
+      handleFileContents(outfile, linkname);
     } else if (S_ISDIR(link_stat->st_mode)) {
       handleDirContents(outfile, linkname, verbose, strict);
     } else if (S_ISLNK(link_stat->st_mode)) {
@@ -242,7 +242,7 @@ void createArchiveHelper(
     printf(" %s\n", curr_path);
   }
   if (S_ISREG(stat->st_mode)) {
-    handleFileContents(outfile, curr_path, verbose, strict);
+    handleFileContents(outfile, curr_path);
   } else if (S_ISDIR(stat->st_mode)) {
     handleDirContents(outfile, curr_path, verbose, strict);
   } else if (S_ISLNK(stat->st_mode)) {
