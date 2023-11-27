@@ -8,10 +8,56 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <arpa/inet.h>
 
 #include "safe_alloc.h"
 #include "safe_dir.h"
 #include "safe_file.h"
+
+/* For interoperability with GNU tar. GNU seems to
+* set the high–order bit of the first byte, then
+* treat the rest of the field as a binary integer
+* in network byte order.
+* I don’t know for sure if it’s a 32 or 64–bit int, but for
+* this version, we’ll only support 32. (well, 31)
+* returns the integer on success, –1 on failure.
+* In spite of the name of htonl(), it converts int32 t
+*/
+uint32_t extract_special_int(char *where, int len) {
+int32_t val= -1;
+if ( (len >= sizeof(val)) && (where[0] & 0x80)) {
+/* the top bit is set and we have space
+* extract the last four bytes */
+val = *(int32 t *)(where+len-sizeof(val));
+val = ntohl(val); /* convert to host byte order */
+}
+return val;
+}
+
+/* For interoperability with GNU tar. GNU seems to
+* set the high–order bit of the first byte, then
+* treat the rest of the field as a binary integer
+* in network byte order.
+* Insert the given integer into the given field
+* using this technique. Returns 0 on success, nonzero
+* otherwise
+*/
+int insert_special_int(char *where, size_t size, int32_t val) {
+int err=0;
+if ( val < 0 || ( size < sizeof(val)) ) {
+/* if it’s negative, bit 31 is set and we can’t use the flag
+* if len is too small, we can’t write it. Either way, we’re
+* done.
+*/
+err++;
+} else {
+/* game on....*/
+memset(where, 0, size); /* Clear out the buffer */
+*(int32 t *)(where+size-sizeof(val)) = htonl(val); /* place the int */
+*where |= 0x80; /* set that high–order bit */
+}
+return err;
+}
 
 void handleFileContents(int outfile, char* curr_path) {
   struct stat* stat = safeMalloc(sizeof(struct stat));
@@ -92,11 +138,12 @@ void createArchiveHelper(
   checksum += strlen(header_name);
   /* Store the mode in a string */
   char* header_mode = (char*)safeCalloc(sizeof(char), ARCHIVE_MODE_SIZE + 1);
-  snprintf(header_mode, ARCHIVE_MODE_SIZE + 1, "%08o", stat->st_mode);
+  snprintf(header_mode, ARCHIVE_MODE_SIZE, "%07o", (unsigned int) stat->st_mode & DEFAULT_PERMISSIONS);
   checksum += strlen(header_mode);
   /* Store the user id in a string */
   char* header_uid = (char*)safeCalloc(sizeof(char), ARCHIVE_UID_SIZE + 1);
-  snprintf(header_uid, ARCHIVE_UID_SIZE + 1, "%08o", stat->st_uid);
+  snprintf(header_uid, ARCHIVE_UID_SIZE, "%07o", stat->st_uid);
+  printf("%s\n", header_uid);
   checksum += strlen(header_uid);
   /* Store the group id in a string */
   char* header_gid = (char*)safeCalloc(sizeof(char), ARCHIVE_GID_SIZE + 1);
@@ -267,6 +314,10 @@ void createArchive(char* archive_name, int file_count, char* file_names[],
   for (int i = 0; i < file_count; i++) {
     createArchiveHelper(outfile, file_names[0], verbose, strict);
   }
+  /* Write the End of Archive marker which consists of two blocks of all zero bytes */
+  char* end_padding = (char*)safeCalloc(sizeof(char), ARCHIVE_BLOCK_SIZE * 2);
+  safeWrite(outfile, end_padding, ARCHIVE_BLOCK_SIZE * 2);
+  safeFree(end_padding);
   safeClose(outfile);
 }
 

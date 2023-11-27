@@ -8,6 +8,8 @@
     abort();                                                                  \
   } while (0)
 
+#define DEFAULT_PERMISSIONS (S_IRWXU | S_IRWXG | S_IRWXO)
+
 #define ARCHIVE_BLOCK_SIZE    512 /* The size of an archive block */
 #define ARCHIVE_NAME_SIZE     100 /* File name portion of the header */
 #define ARCHIVE_MODE_SIZE     8   /* File modes portion of the header */

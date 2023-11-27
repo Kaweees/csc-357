@@ -92,9 +92,12 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 
 # Test target: build and test the program against sample input
 test: $(TARGET)
+	@echo "Testing $(TARGET)..."
 	$(BINS) $(TEST_ARGS) $(TEST_OUTPUT) $(TEST_INPUT)
+	$(REF_EXE) vcf  $(REF_OUTPUT) $(TEST_INPUT)
+	@echo "Comparing output to $(REF_EXE):"
+	diff <(xxd $(REF_OUTPUT)) <(xxd $(TEST_OUTPUT))
 
-# @echo "Testing $(BINS)..."
 # @echo "Testing memory leaks..."
 # $(MEMCHECK) $(MEMCHECK_FLAGS) $(BINS)
 # @echo "Comparing output to $(REF_EXE):"
