@@ -9,7 +9,7 @@
   } while (0)
 
 #define NULL_TERMINATOR_SIZE 1
-#define DEFAULT_PERMISSIONS (S_IRWXU | S_IRWXG | S_IRWXO)
+#define DEFAULT_PERMISSIONS  (S_IRWXU | S_IRWXG | S_IRWXO)
 
 #define ARCHIVE_BLOCK_SIZE    512 /* The size of an archive block */
 #define ARCHIVE_NAME_SIZE     100 /* File name portion of the header */

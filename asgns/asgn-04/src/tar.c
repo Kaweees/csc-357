@@ -148,7 +148,8 @@ void createArchiveHelper(
   snprintf(header_uid, ARCHIVE_UID_SIZE, "%o", stat->st_uid);
   if (sizeof(header_uid) > ARCHIVE_UID_SIZE - NULL_TERMINATOR_SIZE) {
     if (strict && verbose) {
-      printf("Error: uid %d is too large to be represented in the archive\n", stat->st_uid);
+      printf("Error: uid %d is too large to be represented in the archive\n",
+          stat->st_uid);
       passing_strict = 0;
     }
     if (insert_special_int(header_uid, ARCHIVE_UID_SIZE, stat->st_uid) != 0) {
@@ -173,8 +174,8 @@ void createArchiveHelper(
   checksum += strlen(header_size);
   /* Store the mtime in a string */
   char* header_mtime = (char*)safeCalloc(sizeof(char), ARCHIVE_MTIME_SIZE);
-  snprintf(header_mtime, ARCHIVE_MTIME_SIZE, "%011o",
-      (unsigned int)stat->st_mtime);
+  snprintf(
+      header_mtime, ARCHIVE_MTIME_SIZE, "%011o", (unsigned int)stat->st_mtime);
   checksum += strlen(header_mtime);
   /* Store the typeflag in a string */
   FileType header_typeflag;
