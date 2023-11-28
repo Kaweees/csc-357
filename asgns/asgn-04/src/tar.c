@@ -129,6 +129,7 @@ void handleLinkContents(int outfile, char* curr_path, int verbose, int strict) {
 void createArchiveHelper(
     int outfile, char* curr_path, int verbose, int strict) {
   int passing_strict = 1;
+  int success_writing = 1;
   uint8_t checksum = 0;
   /* Get the stat of the file/directory */
   struct stat* stat = safeMalloc(sizeof(struct stat));
@@ -138,30 +139,41 @@ void createArchiveHelper(
   strncpy(header_name, curr_path, ARCHIVE_NAME_SIZE);
   checksum += strlen(header_name);
   /* Store the mode in a string */
-  char* header_mode = (char*)safeCalloc(sizeof(char), ARCHIVE_MODE_SIZE + 1);
+  char* header_mode = (char*)safeCalloc(sizeof(char), ARCHIVE_MODE_SIZE);
   snprintf(header_mode, ARCHIVE_MODE_SIZE, "%07o",
       (unsigned int)stat->st_mode & DEFAULT_PERMISSIONS);
   checksum += strlen(header_mode);
   /* Store the user id in a string */
-  char* header_uid = (char*)safeCalloc(sizeof(char), ARCHIVE_UID_SIZE + 1);
-  snprintf(header_uid, ARCHIVE_UID_SIZE, "%07o", stat->st_uid);
-  printf("%s\n", header_uid);
-  if (!strict && (sizeof(stat->st_uid) > ARCHIVE_UID_SIZE)) {
-    passing_strict = 0;
+  char* header_uid = (char*)safeCalloc(sizeof(char), ARCHIVE_UID_SIZE);
+  snprintf(header_uid, ARCHIVE_UID_SIZE, "%o", stat->st_uid);
+  if (sizeof(header_uid) > ARCHIVE_UID_SIZE - NULL_TERMINATOR_SIZE) {
+    if (strict && verbose) {
+      printf("Error: uid %d is too large to be represented in the archive\n", stat->st_uid);
+      passing_strict = 0;
+    }
+    if (insert_special_int(header_uid, ARCHIVE_UID_SIZE, stat->st_uid) != 0) {
+      if (strict && verbose) {
+        printf("Error: unable to insert uid %d into header\n", stat->st_uid);
+        success_writing = 0;
+      }
+    }
+    printf("header_uid: %s\n", header_uid);
+  } else {
+    snprintf(header_uid, ARCHIVE_UID_SIZE, "%07o", stat->st_uid);
   }
   checksum += strlen(header_uid);
   /* Store the group id in a string */
-  char* header_gid = (char*)safeCalloc(sizeof(char), ARCHIVE_GID_SIZE + 1);
-  snprintf(header_gid, ARCHIVE_GID_SIZE + 1, "%08o", stat->st_gid);
+  char* header_gid = (char*)safeCalloc(sizeof(char), ARCHIVE_GID_SIZE);
+  snprintf(header_gid, ARCHIVE_GID_SIZE, "%07o", stat->st_gid);
   checksum += strlen(header_gid);
   /* Store the size in a string */
-  char* header_size = (char*)safeCalloc(sizeof(char), ARCHIVE_SIZE_SIZE + 1);
+  char* header_size = (char*)safeCalloc(sizeof(char), ARCHIVE_SIZE_SIZE);
   snprintf(
-      header_size, ARCHIVE_SIZE_SIZE + 1, "%012o", (unsigned int)stat->st_size);
+      header_size, ARCHIVE_SIZE_SIZE, "%011o", (unsigned int)stat->st_size);
   checksum += strlen(header_size);
   /* Store the mtime in a string */
-  char* header_mtime = (char*)safeCalloc(sizeof(char), ARCHIVE_MTIME_SIZE + 1);
-  snprintf(header_mtime, ARCHIVE_MTIME_SIZE + 1, "%012o",
+  char* header_mtime = (char*)safeCalloc(sizeof(char), ARCHIVE_MTIME_SIZE);
+  snprintf(header_mtime, ARCHIVE_MTIME_SIZE, "%011o",
       (unsigned int)stat->st_mtime);
   checksum += strlen(header_mtime);
   /* Store the typeflag in a string */
@@ -172,9 +184,8 @@ void createArchiveHelper(
     header_typeflag = SYMBOLIC_LINK;
   } else if (S_ISDIR(stat->st_mode)) {
     header_typeflag = DIRECTORY;
-  } else {
-    header_typeflag = REGULAR_FILE_ALTERNATE;
   }
+  printf("header_typeflag: %c\n", header_typeflag);
   checksum++;
   /* Store the linkname in a string */
   char* header_linkname =
@@ -217,7 +228,7 @@ void createArchiveHelper(
       (char*)safeCalloc(sizeof(char), ARCHIVE_CHKSUM_SIZE + 1);
   checksum += ARCHIVE_CHKSUM_SIZE;
   snprintf(header_chksum, ARCHIVE_CHKSUM_SIZE + 1, "%08o", 0);
-  if (!strict || (strict && passing_strict)) {
+  if ((!strict || (strict && passing_strict)) && success_writing) {
     /* Write the file contents to the archive if strict mode enabled and the
      * file is conforming to the POSIX-specified USTAR archive format or if
      * strict mode is not enabled */
