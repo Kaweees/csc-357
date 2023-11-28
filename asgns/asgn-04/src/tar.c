@@ -146,6 +146,9 @@ void createArchiveHelper(
   char* header_uid = (char*)safeCalloc(sizeof(char), ARCHIVE_UID_SIZE + 1);
   snprintf(header_uid, ARCHIVE_UID_SIZE, "%07o", stat->st_uid);
   printf("%s\n", header_uid);
+  if (!strict && (sizeof(stat->st_uid) > ARCHIVE_UID_SIZE)) {
+    passing_strict = 0;
+  }
   checksum += strlen(header_uid);
   /* Store the group id in a string */
   char* header_gid = (char*)safeCalloc(sizeof(char), ARCHIVE_GID_SIZE + 1);
@@ -214,8 +217,10 @@ void createArchiveHelper(
       (char*)safeCalloc(sizeof(char), ARCHIVE_CHKSUM_SIZE + 1);
   checksum += ARCHIVE_CHKSUM_SIZE;
   snprintf(header_chksum, ARCHIVE_CHKSUM_SIZE + 1, "%08o", 0);
-  if (strict && passing_strict || !passing_strict) {
-    /* Write the file contents to the archive if strict mode enabled and the file is conforming to the POSIX-specified USTAR archive format or if strict mode is not enabled */
+  if (!strict || (strict && passing_strict)) {
+    /* Write the file contents to the archive if strict mode enabled and the
+     * file is conforming to the POSIX-specified USTAR archive format or if
+     * strict mode is not enabled */
     /* Write the string to the archive */
     safeWrite(outfile, header_name, ARCHIVE_NAME_SIZE);
     safeFree(header_name);
@@ -262,7 +267,7 @@ void createArchiveHelper(
     safeFree(header_devminor);
     /* Write the prefix to the archive */
     safeWrite(outfile, header_prefix, ARCHIVE_PREFIX_SIZE);
-    safeFree(header_prefix); 
+    safeFree(header_prefix);
   }
   /* print out file permissions, the owner/group, the size, last modification
    * time and the filename*/
