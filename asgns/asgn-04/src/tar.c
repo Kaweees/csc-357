@@ -25,7 +25,7 @@
  */
 uint32_t extract_special_int(char* where, int len) {
   int32_t val = -1;
-  if (((long unsigned int) len >= sizeof(val)) && (where[0] & 0x80)) {
+  if (((long unsigned int)len >= sizeof(val)) && (where[0] & 0x80)) {
     /* the top bit is set and we have space
      * extract the last four bytes */
     val = *(int32_t*)(where + len - sizeof(val));
@@ -128,6 +128,7 @@ void handleLinkContents(int outfile, char* curr_path, int verbose, int strict) {
 
 void createArchiveHelper(
     int outfile, char* curr_path, int verbose, int strict) {
+  int passing_strict = 1;
   uint8_t checksum = 0;
   /* Get the stat of the file/directory */
   struct stat* stat = safeMalloc(sizeof(struct stat));
@@ -213,53 +214,56 @@ void createArchiveHelper(
       (char*)safeCalloc(sizeof(char), ARCHIVE_CHKSUM_SIZE + 1);
   checksum += ARCHIVE_CHKSUM_SIZE;
   snprintf(header_chksum, ARCHIVE_CHKSUM_SIZE + 1, "%08o", 0);
-  /* Write the string to the archive */
-  safeWrite(outfile, header_name, ARCHIVE_NAME_SIZE);
-  safeFree(header_name);
-  /* Write the mode to the archive */
-  safeWrite(outfile, header_mode, ARCHIVE_MODE_SIZE);
-  safeFree(header_mode);
-  /* Write the uid to the archive */
-  safeWrite(outfile, header_uid, ARCHIVE_UID_SIZE);
-  safeFree(header_uid);
-  /* Write the gid to the archive */
-  safeWrite(outfile, header_gid, ARCHIVE_GID_SIZE);
-  safeFree(header_gid);
-  /* Write the size to the archive */
-  safeWrite(outfile, header_size, ARCHIVE_SIZE_SIZE);
-  safeFree(header_size);
-  /* Write the mtime to the archive */
-  safeWrite(outfile, header_mtime, ARCHIVE_MTIME_SIZE);
-  safeFree(header_mtime);
-  /* Write the chksum to the archive */
-  safeWrite(outfile, header_chksum, ARCHIVE_CHKSUM_SIZE);
-  safeFree(header_chksum);
-  /* Write the typeflag to the archive */
-  safeWrite(outfile, &header_typeflag, ARCHIVE_TYPEFLAG_SIZE);
-  /* Write the linkname to the archive */
-  safeWrite(outfile, header_linkname, ARCHIVE_LINKNAME_SIZE);
-  safeFree(header_linkname);
-  /* Write the magic to the archive */
-  safeWrite(outfile, header_magic, ARCHIVE_MAGIC_SIZE);
-  safeFree(header_magic);
-  /* Write the version to the archive */
-  safeWrite(outfile, header_version, ARCHIVE_VERSION_SIZE);
-  safeFree(header_version);
-  /* Write the uname to the archive */
-  safeWrite(outfile, header_uname, ARCHIVE_UNAME_SIZE);
-  safeFree(header_uname);
-  /* Write the gname to the archive */
-  safeWrite(outfile, header_gname, ARCHIVE_GNAME_SIZE);
-  safeFree(header_gname);
-  /* Write the devmajor to the archive */
-  safeWrite(outfile, header_devmajor, ARCHIVE_DEVMAJOR_SIZE);
-  safeFree(header_devmajor);
-  /* Write the devminor to the archive */
-  safeWrite(outfile, header_devminor, ARCHIVE_DEVMINOR_SIZE);
-  safeFree(header_devminor);
-  /* Write the prefix to the archive */
-  safeWrite(outfile, header_prefix, ARCHIVE_PREFIX_SIZE);
-  safeFree(header_prefix);
+  if (strict && passing_strict || !passing_strict) {
+    /* Write the file contents to the archive if strict mode enabled and the file is conforming to the POSIX-specified USTAR archive format or if strict mode is not enabled */
+    /* Write the string to the archive */
+    safeWrite(outfile, header_name, ARCHIVE_NAME_SIZE);
+    safeFree(header_name);
+    /* Write the mode to the archive */
+    safeWrite(outfile, header_mode, ARCHIVE_MODE_SIZE);
+    safeFree(header_mode);
+    /* Write the uid to the archive */
+    safeWrite(outfile, header_uid, ARCHIVE_UID_SIZE);
+    safeFree(header_uid);
+    /* Write the gid to the archive */
+    safeWrite(outfile, header_gid, ARCHIVE_GID_SIZE);
+    safeFree(header_gid);
+    /* Write the size to the archive */
+    safeWrite(outfile, header_size, ARCHIVE_SIZE_SIZE);
+    safeFree(header_size);
+    /* Write the mtime to the archive */
+    safeWrite(outfile, header_mtime, ARCHIVE_MTIME_SIZE);
+    safeFree(header_mtime);
+    /* Write the chksum to the archive */
+    safeWrite(outfile, header_chksum, ARCHIVE_CHKSUM_SIZE);
+    safeFree(header_chksum);
+    /* Write the typeflag to the archive */
+    safeWrite(outfile, &header_typeflag, ARCHIVE_TYPEFLAG_SIZE);
+    /* Write the linkname to the archive */
+    safeWrite(outfile, header_linkname, ARCHIVE_LINKNAME_SIZE);
+    safeFree(header_linkname);
+    /* Write the magic to the archive */
+    safeWrite(outfile, header_magic, ARCHIVE_MAGIC_SIZE);
+    safeFree(header_magic);
+    /* Write the version to the archive */
+    safeWrite(outfile, header_version, ARCHIVE_VERSION_SIZE);
+    safeFree(header_version);
+    /* Write the uname to the archive */
+    safeWrite(outfile, header_uname, ARCHIVE_UNAME_SIZE);
+    safeFree(header_uname);
+    /* Write the gname to the archive */
+    safeWrite(outfile, header_gname, ARCHIVE_GNAME_SIZE);
+    safeFree(header_gname);
+    /* Write the devmajor to the archive */
+    safeWrite(outfile, header_devmajor, ARCHIVE_DEVMAJOR_SIZE);
+    safeFree(header_devmajor);
+    /* Write the devminor to the archive */
+    safeWrite(outfile, header_devminor, ARCHIVE_DEVMINOR_SIZE);
+    safeFree(header_devminor);
+    /* Write the prefix to the archive */
+    safeWrite(outfile, header_prefix, ARCHIVE_PREFIX_SIZE);
+    safeFree(header_prefix); 
+  }
   /* print out file permissions, the owner/group, the size, last modification
    * time and the filename*/
   if (verbose) {
