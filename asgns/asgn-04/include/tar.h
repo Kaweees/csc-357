@@ -1,6 +1,8 @@
+#include <stdint.h>
+#include <stdio.h>
+
 #ifndef TAR
 #define TAR
-#define CARCHH
 #define REGULAR_FILE '0'
 #define SYM_LINK     '2'
 #define DIRECTORY    '5'
