@@ -12,10 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "create_archive.h"
-#include "extract_archive.h"
-#include "list_archive.h"
-#include "traverse_directory.h"
+#include "tar.h"
 #define CHAR_COUNT 256
 /* parses command line arguments, only accepting valid
  * valid inputs. Then does the according process depending
