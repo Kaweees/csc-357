@@ -17,11 +17,11 @@ HANDIN_CLASS := pn-cs357
 # The compiler executable.
 CC := gcc
 # The compiler flags.
-CFLAGS := -Wall -Wextra -Werror -std=gnu99 -pedantic -ggdb -g
+CFLAGS := -Wall -g
 # The linker executable.
 LD := gcc
 # The linker flags.
-LDFLAGS := -Wall -Wextra -Werror -std=gnu99 -pedantic -ggdb -g
+LDFLAGS :=
 # The shell executable.
 SHELL := /bin/bash
 
@@ -39,7 +39,7 @@ DEBUGGER_FLAGS :=
 # The name of the test input file
 TEST_INPUT := test_input.txt
 # The arguments to pass to the test input
-TEST_ARGS :=  -v -c -f
+TEST_ARGS :=  vcf
 # The name of the test output file
 TEST_OUTPUT := test_output.tar
 # The name of the reference executable
@@ -58,7 +58,7 @@ INC_DIR := $(TOP_DIR)/include
 # directory to locate object files
 OBJ_DIR := $(TOP_DIR)/obj
 # directory to place build artifacts
-BUILD_DIR := $(TOP_DIR)/target/release/
+BUILD_DIR := $(TOP_DIR)/
 
 # header files to preprocess
 INCS := -I$(INC_DIR)
@@ -94,7 +94,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 test: $(TARGET)
 	@echo "Testing $(TARGET)..."
 	$(BINS) $(TEST_ARGS) $(TEST_OUTPUT) $(TEST_INPUT)
-	$(REF_EXE) vcf  $(REF_OUTPUT) $(TEST_INPUT)
+	$(REF_EXE) $(TEST_ARGS)  $(REF_OUTPUT) $(TEST_INPUT)
 	@echo "Comparing output to $(REF_EXE):"
 	diff <(xxd $(REF_OUTPUT)) <(xxd $(TEST_OUTPUT))
 
@@ -106,7 +106,6 @@ test: $(TARGET)
 # Clean target: remove build artifacts and non-essential files
 clean:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
-	rm -rf $(BUILD_DIR)
 
 # Debug target: use a debugger to debug the program
 debug: $(BINS)	
@@ -139,5 +138,8 @@ latedays:
 
 # Testcases target: run the program against the testcases
 testcases:
+	cp include/*.h ./
+	cp src/*.c ./
 	@echo "Running testcases..."
 	~pn-cs357/demos/try$(shell L1=$(HANDIN_ASGN); echo $${L1^})
+	rm *.c *.h
