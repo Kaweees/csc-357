@@ -47,9 +47,9 @@ int insert_octal(char *location, size_t size, int32_t val) {
   }
   return ret;
 }
-/*Builds the fileHeader struct from the current path
+/*Builds the USTARHeader struct from the current path
  *   Each path has its own unique header*/
-int buildHeaderFromPath(char *path, fileHeader *fh, int sCheck) {
+int buildHeaderFromPath(char *path, USTARHeader *fh, int sCheck) {
   struct stat sb;
   struct passwd *uid = NULL;
   struct group *gid = NULL;
@@ -86,14 +86,18 @@ int buildHeaderFromPath(char *path, fileHeader *fh, int sCheck) {
   }
   /*Sets the typeflags of the current path depending on
    *       whether it is a directory, link, or regular file*/
+  FileType type;
   if (S_ISREG(sb.st_mode)) {
-    fh->typeflag = REGULAR_FILE;
+    type = REGULAR_FILE;
+    fh->typeflag = type;
     sprintf(fh->size, "%011lo", sb.st_size);
   } else if (S_ISDIR(sb.st_mode)) {
-    fh->typeflag = DIRECTORY;
+    type = DIRECTORY;
+    fh->typeflag = type;
     strcpy(fh->size, "00000000000");
   } else if (S_ISLNK(sb.st_mode)) {
-    fh->typeflag = SYM_LINK;
+    type = SYMBOLIC_LINK;
+    fh->typeflag = type;
     if ((readlink(path, fh->linkname, sizeof(fh->linkname))) == -1) {
       perror("symbolic link");
     }
@@ -135,7 +139,7 @@ void archiveFile(char *path, FILE *outputFile) {
 }
 /*Writes the prefix of the path if neeeded. Only used
  *  if the name is larger than 100, seperates the path from the main*/
-void writeNamePrefix(fileHeader *fh, char *path) {
+void writeNamePrefix(USTARHeader *fh, char *path) {
   int i;
   for (i = strlen(path) - 1; i >= 0; i--) {
     if (path[i] == '/') {
@@ -155,13 +159,13 @@ void writeNamePrefix(fileHeader *fh, char *path) {
  * */
 void extractArchive(int argc, char *argv[], int vCheck, int sCheck) {
   FILE *archive;
-  fileHeader *fH;
+  USTARHeader *fH;
   int readChars = 0, i, foundCheck, size, blocksToSkip;
   char *name;
   /*opens tar file */
   archive = fopen(argv[2], "rb");
   /*allocates space for header struct */
-  if (!(fH = (fileHeader *)calloc(sizeof(fileHeader), 1))) {
+  if (!(fH = (USTARHeader *)calloc(sizeof(USTARHeader), 1))) {
     perror("calloc");
     exit(EXIT_FAILURE);
   }
@@ -226,7 +230,7 @@ void extractArchive(int argc, char *argv[], int vCheck, int sCheck) {
  * checks each case to return a pointer to a new string
  * of the combined full name
  * */
-char *getName(fileHeader *fH) {
+char *getName(USTARHeader *fH) {
   char *fullName;
   if (fH->prefix[0] == '\0' && fH->name[NAME_SIZE - 1] == '\0') {
     if (!(fullName = (char *)malloc(strlen(fH->name) + 1))) {
@@ -264,7 +268,7 @@ char *getName(fileHeader *fH) {
 /*given file name, has certain process for type of file
  * then extracts
  * */
-void extractFile(fileHeader *fH, char *name, FILE *archive_file, int vCheck) {
+void extractFile(USTARHeader *fH, char *name, FILE *archive_file, int vCheck) {
   if (vCheck == 1) {
     printf("%s\n", name);
   }
@@ -272,12 +276,12 @@ void extractFile(fileHeader *fH, char *name, FILE *archive_file, int vCheck) {
     regularExtract(fH, name, archive_file);
   } else if (fH->typeflag == DIRECTORY) {
     directoryExtract(fH, name);
-  } else if (fH->typeflag == SYM_LINK) {
+  } else if (fH->typeflag == SYMBOLIC_LINK) {
     linkExtract(fH, name);
   }
 }
 /* if regular file, opens file and writes data to opened file */
-void regularExtract(fileHeader *fH, char *name, FILE *archive_file) {
+void regularExtract(USTARHeader *fH, char *name, FILE *archive_file) {
   FILE *oFile;
   char readBlock[BLOCK_SIZE];
   int totalChars = 0, readChars = 0;
@@ -303,13 +307,13 @@ void regularExtract(fileHeader *fH, char *name, FILE *archive_file) {
   fclose(oFile);
 }
 /* if extracting directory, creates directory from name */
-void directoryExtract(fileHeader *fH, char *name) {
+void directoryExtract(USTARHeader *fH, char *name) {
   mkdir(name, strtoul(fH->mode, NULL, OCTAL));
   chmod(name, strtoul(fH->mode, NULL, OCTAL));
   chown(name, strtoul(fH->uid, NULL, OCTAL), strtoul(fH->gid, NULL, OCTAL));
 }
 /* if extracting link, creates link from linkname to file name */
-void linkExtract(fileHeader *fH, char *name) {
+void linkExtract(USTARHeader *fH, char *name) {
   symlink(fH->linkname, name);
   chmod(name, strtoul(fH->mode, NULL, 8));
   chown(name, strtoul(fH->uid, NULL, 8), strtoul(fH->gid, NULL, 8));
@@ -319,7 +323,7 @@ void linkExtract(fileHeader *fH, char *name) {
  *   flag specified within the command line arguments. */
 void listArchive(int argc, char *argv[], int vCheck, int sCheck) {
   FILE *archive;
-  fileHeader *fH;
+  USTARHeader *fH;
   int blocksToSkip;
   int readChars = 0;
   unsigned int size;
@@ -331,7 +335,7 @@ void listArchive(int argc, char *argv[], int vCheck, int sCheck) {
     exit(EXIT_FAILURE);
   }
   /* allocates header struct */
-  if (!(fH = (fileHeader *)calloc(sizeof(fileHeader), 1))) {
+  if (!(fH = (USTARHeader *)calloc(sizeof(USTARHeader), 1))) {
     perror("calloc");
     exit(EXIT_FAILURE);
   }
@@ -381,7 +385,7 @@ void listArchive(int argc, char *argv[], int vCheck, int sCheck) {
   fclose(archive);
 }
 /*This function checks the NULL block, if it is or is not NULL*/
-int checkNullBlock(fileHeader *fH) {
+int checkNullBlock(USTARHeader *fH) {
   unsigned int sum = 0;
   unsigned char *headerPtr = (unsigned char *)fH;
   int i;
@@ -393,7 +397,7 @@ int checkNullBlock(fileHeader *fH) {
 }
 /*This function is used to check the chksum
  *   checking for correctness. */
-void checkChksum(fileHeader *fH) {
+void checkChksum(USTARHeader *fH) {
   int chkSum = strtoul(fH->chksum, NULL, OCTAL);
   int i;
   unsigned int sum = 0;
@@ -410,9 +414,9 @@ void checkChksum(fileHeader *fH) {
     exit(EXIT_FAILURE);
   }
 }
-/*This function writes the header given the fileHeader.
+/*This function writes the header given the USTARHeader.
  *   Used when the verbose flag is specified */
-void writeHeader(fileHeader *fH) {
+void writeHeader(USTARHeader *fH) {
   char *permissions = (char *)malloc(11);
   char mtimeString[17];
   time_t mtime = strtoul(fH->mtime, NULL, OCTAL);
@@ -439,14 +443,14 @@ void writeHeader(fileHeader *fH) {
   free(permissions);
   free(name);
 }
-/*Makes the permissions from the fileHeader, used for printing
+/*Makes the permissions from the USTARHeader, used for printing
  *   when the verbose flag is specified*/
-void makePermissions(fileHeader *fH, char *permissions) {
+void makePermissions(USTARHeader *fH, char *permissions) {
   int mode;
   mode = strtoul(fH->mode, NULL, OCTAL);
   if (fH->typeflag == DIRECTORY) {
     permissions[0] = 'd';
-  } else if (fH->typeflag == SYM_LINK) {
+  } else if (fH->typeflag == SYMBOLIC_LINK) {
     permissions[0] = 'l';
   } else {
     permissions[0] = '-';
@@ -465,7 +469,7 @@ void makePermissions(fileHeader *fH, char *permissions) {
 /*Used to print the names, extra functionality is added
  *   to make sure that the prefix and the name is correctly
  *     concatenated and added. */
-void printName(fileHeader *fH) {
+void printName(USTARHeader *fH) {
   char *fullName;
   if (fH->prefix[0] == '\0' && fH->name[NAME_SIZE - 1] == '\0') {
     printf("%s\n", fH->name);
@@ -510,8 +514,8 @@ void traversePath(char *path, FILE *outputFile, int vCheck, int sCheck) {
   struct dirent *d;
   DIR *dir;
   char *str, *tempPath;
-  struct fileHeader *tempFh;
-  if (!(tempFh = (fileHeader *)calloc(sizeof(fileHeader), 1))) {
+  struct USTARHeader *tempFh;
+  if (!(tempFh = (USTARHeader *)calloc(sizeof(USTARHeader), 1))) {
     perror("calloc");
     exit(EXIT_FAILURE);
   }
@@ -529,7 +533,7 @@ void traversePath(char *path, FILE *outputFile, int vCheck, int sCheck) {
       free(tempFh);
       return;
     }
-    fwrite(tempFh, sizeof(fileHeader), 1, outputFile);
+    fwrite(tempFh, sizeof(USTARHeader), 1, outputFile);
     if (sb.st_size != 0) {
       archiveFile(path, outputFile);
     }
@@ -540,7 +544,7 @@ void traversePath(char *path, FILE *outputFile, int vCheck, int sCheck) {
       free(tempFh);
       return;
     }
-    fwrite(tempFh, sizeof(fileHeader), 1, outputFile);
+    fwrite(tempFh, sizeof(USTARHeader), 1, outputFile);
   }
   /*If the file specified is of type directory*/
   else if (S_ISDIR(sb.st_mode)) {
@@ -567,7 +571,7 @@ void traversePath(char *path, FILE *outputFile, int vCheck, int sCheck) {
       closedir(dir);
       return;
     }
-    fwrite(tempFh, sizeof(fileHeader), 1, outputFile);
+    fwrite(tempFh, sizeof(USTARHeader), 1, outputFile);
     /*Makes it so that the recursion of the file system does not
      *           recurse upon the "." and the ".." directories otherwise it
      * causes an infinite loop */
