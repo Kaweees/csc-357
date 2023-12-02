@@ -83,7 +83,7 @@ $(TARGET): $(BINS)
 # Rule to build the program from linked object files
 $(BINS): $(OBJS)
 	@mkdir -p $(BUILD_DIR) # Create the build directory if it doesn't exist
-	$(LD) $(LDFLAGS) $(OBJS) -L ~pn-cs357/Given/Talk/lib64 -L ~pn-cs357/Given/Talk/lib -o $(BINS)
+	$(LD) $(LDFLAGS) $(OBJS) -L /home/pn-cs357/Given/Talk/lib64 -ltalk -lncurses -o $(BINS)
 
 # Rule to compile source files into object files 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c

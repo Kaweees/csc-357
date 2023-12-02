@@ -75,7 +75,7 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
   for (i = 0; i < strlen(line); i++) {
     line[i] = tolower(line[i]);
   }
-  if (acceptAll && strcmp(line, "y") == 0 || strcmp(line, "yes") == 0) {
+  if (acceptAll && (strcmp(line, "y") == 0 || strcmp(line, "yes") == 0)) {
     // Accept the connection
     printf("Connection accepted.\n");
     send(client_socket, "ok", 2, 0);
