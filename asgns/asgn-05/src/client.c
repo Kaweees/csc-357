@@ -15,11 +15,7 @@
 #define MAX_USERNAME_SIZE    256  // Adjust the size as needed
 #define RESPONSE_BUFFER_SIZE 256
 
-// Global flag to signal termination
-volatile sig_atomic_t terminate = 0;
-
-// Signal handler for Ctrl-C (SIGINT)
-void sigint_handler(int signo) { terminate = 1; }
+extern volatile sig_atomic_t terminate;
 
 void clientMode(const char *hostname, int port, int verbose, int noNcurses) {
   /* File descriptors for the client socket */

@@ -65,17 +65,21 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
     close(server_socket);
     exit(EXIT_FAILURE);
   }
-
   /* Display message requesting acceptance */
   printf("Mytalk request from user@%s. Accept (y/n)? ",
       inet_ntoa(client_address.sin_addr));
-  char line[LINE_BUFFER_SIZE];
-  fgets(line, LINE_BUFFER_SIZE, stdin);
+  char line[LINE_BUFFER_SIZE] = {0};
+  if (scanf("%1024s", line) != 1) {
+    perror("Error reading from stdin");
+    close(client_socket);
+    close(server_socket);
+    exit(EXIT_FAILURE);
+  }
   size_t i = 0;
   for (i = 0; i < strlen(line); i++) {
     line[i] = tolower(line[i]);
   }
-  if (acceptAll && (strcmp(line, "y") == 0 || strcmp(line, "yes") == 0)) {
+  if (acceptAll || strcmp(line, "y") == 0 || strcmp(line, "yes") == 0) {
     // Accept the connection
     printf("Connection accepted.\n");
     send(client_socket, "ok", 2, 0);
@@ -84,6 +88,9 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
     if (!noNcurses) {
       start_windowing();
     }
+
+    // Register the signal handler for SIGINT (Ctrl-C)
+    signal(SIGINT, sigint_handler);
 
     char inputBuffer[MAX_BUFFER_SIZE];
     char remote_buffer[MAX_BUFFER_SIZE];

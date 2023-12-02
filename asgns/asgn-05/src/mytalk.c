@@ -9,7 +9,7 @@
 #define OUT_OF_OPTIONS -1
 
 #define USAGE_STRING(prog_name) \
-  "Usage: #prog_name [ -v ] [ -a ] [ -N ] [ hostname ] port\n"
+  "Usage: mytalk [ -v ] [ -a ] [ -N ] [ hostname ] port\n"
 
 /* Represents the options that can be passed to the program */
 typedef enum TalkOptions {
