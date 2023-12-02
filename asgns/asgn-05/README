@@ -1,0 +1,5 @@
+Miguel Villa Floran (mavillaf)
+
+Run `make`. `Make help` should help enlighten you on the commands available to you. Note that testing via the Makefile does not work, but compilation does.
+
+This project has a lot more unused artifcats, as I had two other assignments due tonight as well. I've realied that the chatting functions for the server and client can be abstracted into a single cohesive function, but I do not have the time ro refactor the codebase. I recently wrote some boilerplater code for a Go server, so it was nice seeing its roots manifest in this assignment https://github.com/Kaweees/go-server. I think I will try to attempt to add logging functionality to my version of my mytalk chatting server, that would be interesting. Overall great and interesting assignment, timing was just bad for me.

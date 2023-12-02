@@ -129,8 +129,11 @@ help:
 
 # Handin target: hand in the assignment using the handin program
 handin:
+	cp include/*.h ./
+	cp src/*.c ./
 	@echo "Submitting $(HANDIN_ASGN) via handin..."
 	handin $(HANDIN_CLASS) $(HANDIN_ASGN) *.c *.h Makefile README
+	rm *.c *.h
 
 # Latedays target: reopen the assignment using the latedays program
 latedays:
