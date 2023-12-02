@@ -126,6 +126,7 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
               stop_windowing();
             }
             close(client_socket);
+            close(server_socket);
             exit(EXIT_SUCCESS);
           } else if (has_hit_eof()) { /* If EOF is hit in the middle of a line,
                                        * send the line and terminate */
@@ -137,6 +138,7 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
               stop_windowing();
             }
             close(client_socket);
+            close(server_socket);
             exit(EXIT_SUCCESS);
           } else {
             /* Otherwise, send the line to the server */
@@ -153,6 +155,7 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
            * and terminate */
           write_to_output(EXIT_MSG, sizeof(EXIT_MSG) - 1);
           close(client_socket);
+          close(server_socket);
           sleep(WAIT_TIME);
           if (!noNcurses) {
             stop_windowing();
@@ -175,10 +178,12 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
     }
     /* Close the socket when done */
     close(client_socket);
+    close(server_socket);
   } else {
     /* If the connection is declined, print the message and terminate */
     printf("Connection declined.\n");
     /* Close the socket when done */
     close(client_socket);
+    close(server_socket);
   }
 }
