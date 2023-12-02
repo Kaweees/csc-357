@@ -2,21 +2,30 @@
 
 #include <arpa/inet.h>
 #include <ctype.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <talk.h>
 #include <unistd.h>
 
 #include "talk.h"
 
-// Global flag to signal termination
-volatile sig_atomic_t terminate = 0;
+#define MAX_USERNAME_SIZE    256  // Adjust the size as needed
+#define RESPONSE_BUFFER_SIZE 256
+#define LOCAL                0  // Refers to the local terminal
+#define REMOTE               1  // Refers to the remote terminal
+#define EXIT_MSG             "Connection closed.  ^C to terminate."
+#define WAIT_TIME            150
+#define SERVER_FAILURE       -1
 
-// Signal handler for Ctrl-C (SIGINT)
-void sigint_handler(int signo) { terminate = 1; }
+extern volatile sig_atomic_t terminate;
+extern void sigint_handler(int signo);
 
 void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
   /* File descriptors for the server and client sockets */
@@ -84,7 +93,7 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
     printf("Connection accepted.\n");
     send(client_socket, "ok", 2, 0);
 
-    /* Start the ncurses windows if requested */
+    /* Start ncurses windowing if requested */
     if (!noNcurses) {
       start_windowing();
     }
@@ -95,36 +104,81 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
     char inputBuffer[MAX_BUFFER_SIZE];
     char remote_buffer[MAX_BUFFER_SIZE];
 
+    struct pollfd fds[2];
+    fds[LOCAL].fd = STDIN_FILENO;
+    fds[LOCAL].events = POLLIN;
+    fds[LOCAL].revents = 0;
+    fds[REMOTE] = fds[LOCAL];
+    fds[REMOTE].fd = client_socket;
+
     while (!terminate) {
-      /* Send user input to remote user */
-      if (has_whole_line()) {
+      /* Poll for user input or server input */
+      poll(fds, 2, -1);
+      /* If the user has typed something, read it into the input buffer */
+      if (fds[LOCAL].revents & POLLIN) {
         update_input_buffer();
-        read_from_input(inputBuffer, MAX_BUFFER_SIZE);
-        write_to_output(inputBuffer, strlen(inputBuffer));
+        if (has_whole_line()) {
+          int len = read_from_input(inputBuffer, MAX_BUFFER_SIZE);
+          /* If EOF is hit, send the exit message and terminate */
+          if (len == 0 && has_hit_eof()) {
+            send(client_socket, EXIT_MSG, sizeof(EXIT_MSG) - 1, 0);
+            if (!noNcurses) {
+              stop_windowing();
+            }
+            close(client_socket);
+            exit(EXIT_SUCCESS);
+          } else if (has_hit_eof()) { /* If EOF is hit in the middle of a line,
+                                       * send the line and terminate */
+            inputBuffer[strlen(inputBuffer) - 1] = '\n';
+            send(client_socket, inputBuffer, strlen(inputBuffer), 0);
+            memset(inputBuffer, 0, sizeof(inputBuffer));
+            send(client_socket, EXIT_MSG, sizeof(EXIT_MSG) - 1, 0);
+            if (!noNcurses) {
+              stop_windowing();
+            }
+            close(client_socket);
+            exit(EXIT_SUCCESS);
+          } else {
+            /* Otherwise, send the line to the server */
+            send(client_socket, inputBuffer, strlen(inputBuffer), 0);
+            memset(inputBuffer, 0, sizeof(inputBuffer));
+          }
+        }
       }
-
-      /* Check for remote user input */
-      if (recv(client_socket, remote_buffer, MAX_BUFFER_SIZE, MSG_DONTWAIT) >
-          0) {
-        write_to_output(remote_buffer, strlen(remote_buffer));
-      }
-
-      /* Check for termination (EOF or SIGINT) */
-      if (has_hit_eof()) {
-        terminate = 1;
+      /* Handle printing output from the server */
+      if (fds[REMOTE].revents & POLLIN) {
+        int len = recv(fds[REMOTE].fd, remote_buffer, sizeof(inputBuffer), 0);
+        if (len == 0) {
+          /* If the server has closed the connection, print the exit message
+           * and terminate */
+          write_to_output(EXIT_MSG, sizeof(EXIT_MSG) - 1);
+          close(client_socket);
+          sleep(WAIT_TIME);
+          if (!noNcurses) {
+            stop_windowing();
+          }
+          return;
+        } else {
+          /* Otherwise, print the server's output */
+          write_to_output(remote_buffer, len);
+        }
+        memset(remote_buffer, 0, sizeof(remote_buffer));
       }
     }
-
     /* Stop ncurses windowing */
     if (!noNcurses) {
       stop_windowing();
     }
+
+    if (verbose) {
+      printf("Connection terminated.\n");
+    }
+    /* Close the socket when done */
+    close(client_socket);
   } else {
-    // Decline the connection
-    send(client_socket, "no", 2, 0);
+    /* If the connection is declined, print the message and terminate */
     printf("Connection declined.\n");
+    /* Close the socket when done */
+    close(client_socket);
   }
-  /* Close the sockets when done */
-  close(client_socket);
-  close(server_socket);
 }

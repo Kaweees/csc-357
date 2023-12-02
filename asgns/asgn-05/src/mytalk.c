@@ -1,6 +1,15 @@
+#include <ctype.h>
 #include <getopt.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <talk.h>
 #include <unistd.h>
 
 #include "client.h"
@@ -25,6 +34,12 @@ void usage() {
   fprintf(stderr, USAGE_STRING(argv[0]));
   exit(EXIT_FAILURE);
 }
+
+// Global flag to signal termination
+volatile sig_atomic_t terminate = 0;
+
+// Signal handler for Ctrl-C (SIGINT)
+void sigint_handler(int signo) { terminate = 1; }
 
 int main(int argc, char *argv[]) {
   enum TalkOptions opt;
