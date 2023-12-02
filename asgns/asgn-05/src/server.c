@@ -1,4 +1,5 @@
-#define _GNU_SOURCE
+#include "server.h"
+
 #include <arpa/inet.h>
 #include <ctype.h>
 #include <signal.h>
@@ -9,20 +10,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "net.h"
-
-#define SERVER_FAILURE   -1
-#define LINE_BUFFER_SIZE 1024
-#define MAX_BUFFER_SIZE  1024
-
-/* Talk library functions */
-void start_windowing(void);
-void stop_windowing(void);
-int read_from_input(char *buf, size_t len);
-int write_to_output(const char *buf, size_t len);
-int has_whole_line(void);
-void update_input_buffer(void);
-int has_hit_eof(void);
+#include "talk.h"
 
 // Global flag to signal termination
 volatile sig_atomic_t terminate = 0;
@@ -83,7 +71,8 @@ void serverMode(int port, int acceptAll, int verbose, int noNcurses) {
       inet_ntoa(client_address.sin_addr));
   char line[LINE_BUFFER_SIZE];
   fgets(line, LINE_BUFFER_SIZE, stdin);
-  for (size_t i = 0; i < strlen(line); i++) {
+  size_t i = 0;
+  for (i = 0; i < strlen(line); i++) {
     line[i] = tolower(line[i]);
   }
   if (acceptAll && strcmp(line, "y") == 0 || strcmp(line, "yes") == 0) {
