@@ -1,24 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
-#define MIN_NUM_ARGS 2 /* The minimum number of command-line arguments*/
+#define MIN_NUM_ARGS    2  /* The minimum number of command-line arguments*/
 #define PROCESS_FAILURE -1 /* The process failure return value*/
-#define CHILD_PROCESS 0 /* The child process return value*/
-#define PROGRAM_NAME 0 /* The index of the program name in argv */
-#define PROGRAM_LOADED 1 /* The index of the program being executed */
+#define CHILD_PROCESS   0  /* The child process return value*/
+#define PROGRAM_NAME    0  /* The index of the program name in argv */
+#define PROGRAM_LOADED  1  /* The index of the program being executed */
 
-#define USAGE_STRING(prog_name) \
-  "Usage: " #prog_name "command [arg1 arg2 ...]\n" \
+#define USAGE_STRING(prog_name) "Usage: " #prog_name "command [arg1 arg2 ...]\n"
 
 /**
  * Prints the proper usage of the program and exits unsuccessfully.
  * @param argv - the command-line arguments
  */
 void usage(char* program_name) {
-  fprintf(stderr, USAGE_STRING(%s), program_name);
+  fprintf(stderr, USAGE_STRING(% s), program_name);
   exit(EXIT_FAILURE);
 }
 

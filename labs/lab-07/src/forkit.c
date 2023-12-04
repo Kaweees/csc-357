@@ -1,16 +1,12 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <sys/wait.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
 
 #define PROCESS_FAILURE 1
-#define CHILD_PROCESS 0
+#define CHILD_PROCESS   0
 
 void forkit() {
   pid_t cpid, w;
@@ -20,7 +16,7 @@ void forkit() {
     exit(EXIT_FAILURE);
   }
   if (cpid == CHILD_PROCESS) { /* Code executed by child */
-    printf("This is the child, pid %jd\n", (intmax_t) getpid());
+    printf("This is the child, pid %jd\n", (intmax_t)getpid());
     exit(EXIT_SUCCESS);
   } else { /* Code executed by parent */
     printf("This is the parent, pid %d\n", getpid());
@@ -48,4 +44,3 @@ int main(int argc, char* argv[]) {
   forkit();
   return EXIT_SUCCESS;
 }
-
