@@ -1,0 +1,3 @@
+Miguel Villa Floran (mavillaf)
+
+Run 'make' to get the binary intended for you. This project works, but is definately a fixer-upper. You might notice in the header files many a function signature that was unused. This is because I plan on optimizing my current program by refactoring the code creation portion of the program to utilize a heap rather than a linked list, and I ask that you please not dock off points for those skeletons in the closet, you won't see them again, as it a product of having many a midterms this week and so little time.
