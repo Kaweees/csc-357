@@ -9,15 +9,16 @@
 #define CHILD_PROCESS   0  /* The child process return value*/
 #define PROGRAM_NAME    0  /* The index of the program name in argv */
 #define PROGRAM_LOADED  1  /* The index of the program being executed */
-
-#define USAGE_STRING(prog_name) "Usage: " #prog_name "command [arg1 arg2 ...]\n"
+#define ZERO_OPTIONS    0  /* The options to pass to execvp and waitpid */
+#define USAGE_STRING \
+  "Usage: %s command [arg1 arg2 ...]\n" /* The program usage string */
 
 /**
  * Prints the proper usage of the program and exits unsuccessfully.
  * @param argv - the command-line arguments
  */
 void usage(char* program_name) {
-  fprintf(stderr, USAGE_STRING(% s), program_name);
+  fprintf(stderr, USAGE_STRING, program_name);
   exit(EXIT_FAILURE);
 }
 
@@ -27,23 +28,29 @@ void usage(char* program_name) {
  * @param args - the arguments to the command
  */
 void tryit(char* command, char* args[]) {
-  for (int i = 0; args[i] != NULL; i++) {
-    printf("%s\n", args[i]);
-  }
-  pid_t child;
-  if ((child = fork()) == PROCESS_FAILURE) {
-    perror("Error forking process");
+  pid_t cpid, w;
+  int wstatus;
+  if ((cpid = fork()) == PROCESS_FAILURE) {
+    perror("fork");
     exit(EXIT_FAILURE);
   }
-  if (child == CHILD_PROCESS) {
+  if (cpid == CHILD_PROCESS) { /* Code executed by child */
+    exit(EXIT_SUCCESS);
+  } else { /* Code executed by parent */
     execvp(command, args);
-    perror("Error executing command");
+  }
+  if ((w = waitpid(cpid, &wstatus, ZERO_OPTIONS)) == PROCESS_FAILURE) {
+    perror("waitpid");
     exit(EXIT_FAILURE);
-  } else {
-    if (wait(NULL) == PROCESS_FAILURE) {
-      perror("Error waiting for child process");
-      exit(EXIT_FAILURE);
-    }
+  }
+  if (WIFEXITED(w)) {
+    printf("exited, status=%d\n", WEXITSTATUS(w));
+  } else if (WIFSIGNALED(w)) {
+    printf("killed by signal %d\n", WTERMSIG(w));
+  } else if (WIFSTOPPED(w)) {
+    printf("stopped by signal %d\n", WSTOPSIG(w));
+  } else if (WIFCONTINUED(w)) {
+    printf("continued\n");
   }
 }
 

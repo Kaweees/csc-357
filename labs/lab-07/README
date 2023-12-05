@@ -1,3 +1,5 @@
 Miguel Villa Floran (mavillaf)
 
-Run 'make' to get the binary intended for you. This project works, but is definately a fixer-upper. You might notice in the header files many a function signature that was unused. This is because I plan on optimizing my current program by refactoring the code creation portion of the program to utilize a heap rather than a linked list, and I ask that you please not dock off points for those skeletons in the closet, you won't see them again, as it a product of having many a midterms this week and so little time.
+Run `make`. `Make help` should help enlighten you on the commands available to you. Testing via the Makefile does work and most compilation should too.
+
+This project is (in my humble opinion) simple, well-organized, and written to the best of my ability. I really like that in this class, common utilities in an computer system is constructed and designed from the ground up albeit by abstracting basic functionality in syscalls. I look forward to implementing my own syscalls in Operating Systems, but its nice now to be equipped with the tools needed to build my own developer tools from "scratch". Its also nice to see the pieces come together for the shell project now, as its just tryit + parsing inputs + non-determinant buffered inputs + managing pipelines
