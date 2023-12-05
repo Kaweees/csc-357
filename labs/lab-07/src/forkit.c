@@ -12,7 +12,7 @@ void forkit() {
   pid_t cpid, w;
   int wstatus;
   if ((cpid = fork()) == PROCESS_FAILURE) {
-    perror("Error forking process");
+    perror("fork");
     exit(EXIT_FAILURE);
   }
   if (cpid == CHILD_PROCESS) { /* Code executed by child */
@@ -25,15 +25,6 @@ void forkit() {
   if (w == PROCESS_FAILURE) {
     perror("waitpid");
     exit(EXIT_FAILURE);
-  }
-  if (WIFEXITED(w)) {
-    printf("exited, status=%d\n", WEXITSTATUS(w));
-  } else if (WIFSIGNALED(w)) {
-    printf("killed by signal %d\n", WTERMSIG(w));
-  } else if (WIFSTOPPED(w)) {
-    printf("stopped by signal %d\n", WSTOPSIG(w));
-  } else if (WIFCONTINUED(w)) {
-    printf("continued\n");
   }
   printf("This is the parent, pid %d, signing off\n", getpid());
 }

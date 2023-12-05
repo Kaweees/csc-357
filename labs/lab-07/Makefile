@@ -37,17 +37,10 @@ DEBUGGER := gdb
 # The debugger flags.
 DEBUGGER_FLAGS := 
 
-# The name of the test input file
-TEST_INPUT := tests/12_longcodes
-# The name of the test output files
-FORKIT_OUTPUT := FORKIT_output.huff
-TRYIT_OUTPUT := TRYIT_output
-# The name of the reference executable
-REF_EXE := ~pn-cs357/demos/htable
-
-# The name of the reference output file
-REF_ENCODE_OUTPUT := tests/12_longcodes.huff
-REF_TRYIT_OUTPUT := tests/12_longcodes
+# The name of the test executable for FORKIT
+TRYIT_TEST_INPUT := /bin/cat
+# The flags to pass to the test executable for FORKIT
+TRYIT_TEST_INPUT_FLAGS := README
 
 ## Output Section: change these variables based on your output
 # -----------------------------------------------------------------------------
@@ -77,7 +70,7 @@ TRYIT_BIN := $(BUILD_DIR)$(TRYIT_TARGET)
 ## Command Section: change these variables based on your commands
 # -----------------------------------------------------------------------------
 # Targets
-.PHONY: all $(FORKIT_TARGET) $(TRYIT_TARGET) test clean debug help
+.PHONY: all $(FORKIT_TARGET) $(TRYIT_TARGET) memcheck test clean debug handin latedays testcases help
 
 # Default target: build the program
 all: $(FORKIT_TARGET) $(TRYIT_TARGET)
@@ -97,15 +90,18 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR) # Create the object directory if it doesn't exist
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
+# Memcheck target: run the program through a memory checker
+memcheck: $(FORKIT_TARGET) $(TRYIT_TARGET)
+	@echo "Checking $(FORKIT_TARGET) and $(TRYIT_TARGET) for memory leaks..."
+	$(MEMCHECK) $(MEMCHECK_FLAGS) $(FORKIT_BIN)
+	$(MEMCHECK) $(MEMCHECK_FLAGS) $(TRYIT_BIN) $(TRYIT_TEST_INPUT) $(TRYIT_TEST_INPUT_FLAGS)
+
 # Test target: build and test the program against sample input
 test: $(FORKIT_TARGET) $(TRYIT_TARGET)
-	@echo "Testing $(FORKIT_TARGET) and $(TRYIT_TARGET)..."
-	@echo "Testing memory leaks..."
-	$(MEMCHECK) $(MEMCHECK_FLAGS) $(FORKIT_BIN) $(TEST_INPUT) $(FORKIT_OUTPUT)
-	$(MEMCHECK) $(MEMCHECK_FLAGS) $(TRYIT_BIN) $(FORKIT_OUTPUT) $(TRYIT_OUTPUT)
-	@echo "Comparing output to $(REF_EXE):"
-	xxd <(diff $(FORKIT_OUTPUT) $(REF_ENCODE_OUTPUT))
-	diff $(TRYIT_OUTPUT) $(REF_TRYIT_OUTPUT)
+	@echo "Testing $(FORKIT_TARGET)..."
+	$(FORKIT_BIN)
+	@echo "Testing $(TRYIT_TARGET)..."
+	$(TRYIT_TEST_INPUT) $(TRYIT_TEST_INPUT_FLAGS)
 
 # Clean target: remove build artifacts and non-essential files
 clean:
@@ -114,10 +110,29 @@ clean:
 
 # Debug target: use a debugger to debug the program
 debug: $(BINS)
-	
 	@echo "Debugging $(TARGET)..."
-	$(DEBUGGER) $(DEBUGGER_FLAGS) $(FORKIT_BIN) $(TEST_INPUT) $(FORKIT_OUTPUT)
-	$(DEBUGGER) $(DEBUGGER_FLAGS) $(TRYIT_BIN) $(FORKIT_OUTPUT) $(TRYIT_OUTPUT)
+	$(DEBUGGER) $(DEBUGGER_FLAGS) $(FORKIT_BIN)
+	$(DEBUGGER) $(DEBUGGER_FLAGS) $(TRYIT_BIN) $(TRYIT_TEST_INPUT) $(TRYIT_TEST_INPUT_FLAGS)
+
+# Handin target: hand in the assignment using the handin program
+handin:
+	cp include/*.h ./
+	cp src/*.c ./
+	@echo "Submitting $(HANDIN_ASGN) via handin..."
+	handin $(HANDIN_CLASS) $(HANDIN_ASGN) *.c *.h Makefile README
+	rm *.c *.h
+
+# Latedays target: reopen the assignment using the latedays program
+latedays:
+	@echo "Reopening $(HANDIN_ASGN) via latedays..."
+
+# Testcases target: run the program against the testcases
+testcases:
+	cp include/*.h ./
+	cp src/*.c ./
+	@echo "Running testcases..."
+	~pn-cs357/demos/try$(shell L1=$(HANDIN_ASGN); echo $${L1^})
+	rm *.c *.h
 
 # Help target: display usage information
 help:
@@ -127,18 +142,11 @@ help:
 	@echo "  all              Build $(FORKIT_TARGET) and $(TRYIT_TARGET)"
 	@echo "  $(FORKIT_TARGET) 	   Build $(FORKIT_TARGET)"
 	@echo "  $(TRYIT_TARGET) 	   Build $(TRYIT_TARGET)"
-	@echo "  test             Build and test $(FORKIT_TARGET) and $(TRYIT_TARGET) against a sample input, use$(MEMCHECK) to check for memory leaks, and compare the output to $(REF_EXE)"
 	@echo "  clean            Remove build artifacts and non-essential files"
+	@echo "  test             Build and test $(FORKIT_TARGET) and $(TRYIT_TARGET) against a sample input, and compare the output to $(REF_EXE)"
+	@echo "  memcheck         Run $(MEMCHECK) on $(FORKIT_TARGET) and $(TRYIT_TARGET) to check for memory leaks"
 	@echo "  debug            Use $(DEBUGGER) to debug $(FORKIT_TARGET) and $(TRYIT_TARGET)"
-	@echo "  help             Display this help information"
 	@echo "  handin           Hand in the assignment using the handin program"
 	@echo "  latedays         Reopen the assignment using the latedays program"
-
-# Handin target: hand in the assignment using the handin program
-handin:
-	@echo "Submitting $(HANDIN_ASGN) via handin..."
-	handin $(HANDIN_CLASS) $(HANDIN_ASGN) *.c *.h Makefile README
-
-# Latedays target: reopen the assignment using the latedays program
-latedays:
-	@echo "Reopening $(HANDIN_ASGN) via latedays..."
+	@echo "  testcases        Run $(FORKIT_TARGET) and $(TRYIT_TARGET) against the testcases"
+	@echo "  help             Display this help information"
