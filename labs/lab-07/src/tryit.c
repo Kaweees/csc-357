@@ -4,12 +4,11 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define MIN_NUM_ARGS    2  /* The minimum number of command-line arguments*/
-#define PROCESS_FAILURE -1 /* The process failure return value*/
-#define CHILD_PROCESS   0  /* The child process return value*/
-#define PROGRAM_NAME    0  /* The index of the program name in argv */
-#define PROGRAM_LOADED  1  /* The index of the program being executed */
-#define ZERO_OPTIONS    0  /* The options to pass to execvp and waitpid */
+#include "process_values.h"
+
+#define MIN_NUM_ARGS   2 /* The minimum number of command-line arguments*/
+#define PROGRAM_NAME   0 /* The index of the program name in argv */
+#define PROGRAM_LOADED 1 /* The index of the program being executed */
 #define USAGE_STRING \
   "Usage: %s command [arg1 arg2 ...]\n" /* The program usage string */
 

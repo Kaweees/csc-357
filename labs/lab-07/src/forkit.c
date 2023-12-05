@@ -5,8 +5,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define PROCESS_FAILURE 1
-#define CHILD_PROCESS   0
+#include "process_values.h"
 
 void forkit() {
   pid_t cpid, w;

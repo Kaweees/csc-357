@@ -9,7 +9,7 @@ TRYIT_TARGET := tryit
 ## Handin Section: change these variables based on your handin
 # -----------------------------------------------------------------------------
 # The assignment number.
-HANDIN_ASGN := asgn3
+HANDIN_ASGN := lab07
 # The class name.
 HANDIN_CLASS := pn-cs357
 
@@ -105,8 +105,7 @@ test: $(FORKIT_TARGET) $(TRYIT_TARGET)
 
 # Clean target: remove build artifacts and non-essential files
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
-	rm $(FORKIT_OUTPUT) $(TRYIT_OUTPUT)
+	rm -rf $(OBJ_DIR) $(BUILD_DIR)
 
 # Debug target: use a debugger to debug the program
 debug: $(BINS)
@@ -129,7 +128,7 @@ latedays:
 # Testcases target: run the program against the testcases
 testcases:
 	cp include/*.h ./
-	cp src/*.c ./
+	cp src/*.c .
 	@echo "Running testcases..."
 	~pn-cs357/demos/try$(shell L1=$(HANDIN_ASGN); echo $${L1^})
 	rm *.c *.h
